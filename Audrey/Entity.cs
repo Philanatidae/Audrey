@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Audrey.Exceptions;
 
 namespace Audrey
@@ -119,6 +120,36 @@ namespace Audrey
             _components.Remove(componentToRemove);
             // Update caches
             _engine.UpdateFamilyBags(this);
+        }
+
+        /// <summary>
+        /// Removes all components from the entity except for the components
+        /// specified.
+        /// </summary>
+        /// <param name="componentTypes">Component types to preserve in the entity.</param>
+        public void StripAllComponentsExcept(params Type[] componentTypes)
+        {
+            foreach (Type componentType in componentTypes)
+            {
+                if (!componentType.IsComponent())
+                {
+                    throw new TypeNotComponentException();
+                }
+            }
+
+            for (int i = 0; i < _components.Count; i++)
+            {
+                Type componentType = _components[i].GetType();
+
+                if (componentTypes.Contains(componentType))
+                {
+                    // We are not to remove this component
+                    continue;
+                }
+
+                RemoveComponent(componentType);
+                i--;
+            }
         }
     }
 }
