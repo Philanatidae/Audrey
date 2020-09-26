@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audrey.Tests", "Audrey.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audrey", "Audrey\Audrey.csproj", "{A29245AE-ADA3-4D87-9288-E830306823A3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Audrey.Benchmark", "Adurey.Benchmark\Audrey.Benchmark.csproj", "{35F3104A-9A8A-4B85-8180-3B9133FB5A5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{A29245AE-ADA3-4D87-9288-E830306823A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A29245AE-ADA3-4D87-9288-E830306823A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A29245AE-ADA3-4D87-9288-E830306823A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35F3104A-9A8A-4B85-8180-3B9133FB5A5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35F3104A-9A8A-4B85-8180-3B9133FB5A5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35F3104A-9A8A-4B85-8180-3B9133FB5A5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35F3104A-9A8A-4B85-8180-3B9133FB5A5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
