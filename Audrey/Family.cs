@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace Audrey
 {
+    /// <summary>
+    /// Specifies component make-up of entities belonging
+    /// to a Family.
+    /// </summary>
     public class Family
     {
         internal readonly Type[] _allComponents;
@@ -33,22 +37,44 @@ namespace Audrey
             return names;
         }
 
+        /// <summary>
+        /// Specifies components that entities must contain all of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain all of.</param>
+        /// <returns>FamilyBuilder</returns>
         public static FamilyBuilder All(params Type[] types)
         {
             FamilyBuilder familyBuilder = new FamilyBuilder();
             return familyBuilder.All(types);
         }
+        /// <summary>
+        /// Specifies components that entities must contain at least one of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain all of.</param>
+        /// <returns>FamilyBuilder</returns>
         public static FamilyBuilder One(params Type[] types)
         {
             FamilyBuilder familyBuilder = new FamilyBuilder();
             return familyBuilder.One(types);
         }
+        /// <summary>
+        /// Specifies components that entities must contain none of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain none of.</param>
+        /// <returns>FamilyBuilder</returns>
         public static FamilyBuilder Exclude(params Type[] types)
         {
             FamilyBuilder familyBuilder = new FamilyBuilder();
             return familyBuilder.Exclude(types);
         }
 
+        /// <summary>
+        /// Determines if an entity matches the component
+        /// make-up of this Family.
+        /// </summary>
+        /// <param name="engine">Engine the entity belongs to.</param>
+        /// <param name="entityID">ID of the entity.</param>
+        /// <returns>True if the entity matches the Family, otherwise false.</returns>
         public bool Matches(Engine engine, int entityID)
         {
             foreach(Type type in _allComponents)
@@ -83,11 +109,21 @@ namespace Audrey
             return true;
         }
 
+        /// <summary>
+        /// Determines if a Family is equivalent to this Family.
+        /// </summary>
+        /// <param name="other">Family to compare against.</param>
+        /// <returns>True if equivalent, false otherwise.</returns>
         public bool Equals(Family other)
         {
             return _allComponents.IsEquivalent(other._allComponents);
         }
 
+        /// <summary>
+        /// Determines if an object is equivalent to this Family.
+        /// </summary>
+        /// <param name="other">Family to compare against.</param>
+        /// <returns>True if equivalent, false otherwise.</returns>
         public override bool Equals(object obj)
         {
             if(obj == this)
@@ -149,22 +185,41 @@ namespace Audrey
         {
         }
 
+        /// <summary>
+        /// Specifies components that entities must contain all of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain all of.</param>
+        /// <returns>FamilyBuilder</returns>
         public FamilyBuilder All(params Type[] types)
         {
             _allComponents.AddRange(types);
             return this;
         }
+        /// <summary>
+        /// Specifies components that entities must contain at least one of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain all of.</param>
+        /// <returns>FamilyBuilder</returns>
         public FamilyBuilder One(params Type[] types)
         {
             _oneComponents.AddRange(types);
             return this;
         }
+        /// <summary>
+        /// Specifies components that entities must contain none of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain none of.</param>
+        /// <returns>FamilyBuilder</returns>
         public FamilyBuilder Exclude(params Type[] types)
         {
             _excludeComponents.AddRange(types);
             return this;
         }
 
+        /// <summary>
+        /// Returns a constructed Family object.
+        /// </summary>
+        /// <returns>Constructed Family object.</returns>
         public Family Get()
         {
             return new Family(_allComponents.ToArray(), _oneComponents.ToArray(), _excludeComponents.ToArray());

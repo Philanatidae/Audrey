@@ -1,6 +1,4 @@
 ﻿using NUnit.Framework;
-using System;
-using Audrey.Exceptions;
 
 namespace Audrey.Tests
 {
