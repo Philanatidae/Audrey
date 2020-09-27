@@ -47,7 +47,7 @@ namespace Audrey
             if(!_components.ContainsKey(type))
             {
                 _components.Add(type, new ComponentMap<T>());
-                _components[type].Initialize(Entities.Count);
+                _components[type].Initialize(this);
             }
 
             return (T)((ComponentMap<T>)_components[type]).AssignComponent(entityID);
@@ -122,7 +122,7 @@ namespace Audrey
                     {
                         Type componentMapType = typeof(ComponentMap<>).MakeGenericType(compType);
                         _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType));
-                        _components[compType].Initialize(Entities.Count);
+                        _components[compType].Initialize(this);
                     }
 
                     _components[compType].NotifyFamilyMap(familyMap);
@@ -133,7 +133,7 @@ namespace Audrey
                     {
                         Type componentMapType = typeof(ComponentMap<>).MakeGenericType(compType);
                         _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType));
-                        _components[compType].Initialize(Entities.Count);
+                        _components[compType].Initialize(this);
                     }
 
                     _components[compType].NotifyFamilyMap(familyMap);
@@ -144,7 +144,7 @@ namespace Audrey
                     {
                         Type componentMapType = typeof(ComponentMap<>).MakeGenericType(compType);
                         _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType));
-                        _components[compType].Initialize(Entities.Count);
+                        _components[compType].Initialize(this);
                     }
 
                     _components[compType].NotifyFamilyMap(familyMap);

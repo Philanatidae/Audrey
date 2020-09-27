@@ -115,6 +115,12 @@ namespace Audrey
             _entityList.RemoveAt(idx);
             _componentList.RemoveAt(idx);
 
+            // Update _entityIndices to account for the _componentList becoming shorter
+            for(int i = idx; i < _entityList.Count; i++)
+            {
+                _entityIndices[i]--;
+            }
+
             _entityIndices[id] = -1;
 
             foreach (FamilyMap familyMap in _familyMaps)
