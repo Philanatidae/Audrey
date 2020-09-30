@@ -4,6 +4,9 @@ using System.Collections.Generic;
 
 namespace Audrey
 {
+    /// <summary>
+    /// Engine manages Entities.
+    /// </summary>
     public class Engine
     {
         readonly internal EntityMap _entityMap;
@@ -12,11 +15,18 @@ namespace Audrey
 
         internal Dictionary<Family, FamilyManager> _familyManagers = new Dictionary<Family, FamilyManager>();
 
+        /// <summary>
+        /// Constructs an entity Engine.
+        /// </summary>
         public Engine()
         {
             _entityMap = new EntityMap(this);
         }
 
+        /// <summary>
+        /// Creates an Entity.
+        /// </summary>
+        /// <returns>Entity created within the Engine.</returns>
         public Entity CreateEntity()
         {
             Entity entity = _entityMap.CreateEntity();
@@ -33,6 +43,19 @@ namespace Audrey
             return entity;
         }
 
+        /// <summary>
+        /// Destroys an Entity. When an Entity is destroyed, it
+        /// is no longer valid within the Engine an no longer
+        /// belongs in any families. The component instances are
+        /// transferred to the Entity itself, becoming independent.
+        /// 
+        /// Independent Entities can have components added/removed,
+        /// and matches against a Family in case there are any hard
+        /// references to the Entity itself. Otherwise, the garbage
+        /// collector will clean up the Entity and its components
+        /// (this is the normal use case).
+        /// </summary>
+        /// <param name="entity">Entity to destroy.</param>
         public void DestroyEntity(Entity entity)
         {
             if(!_entityMap.IsEntityValid(entity.EntityID))
@@ -42,6 +65,9 @@ namespace Audrey
 
             _entityMap.RemoveEntity(entity.EntityID);
         }
+        /// <summary>
+        /// Destroys all entities in the Engine.
+        /// </summary>
         public void DestroyAllEntities()
         {
             while(GetEntities().Count > 0)
@@ -49,6 +75,10 @@ namespace Audrey
                 DestroyEntity(GetEntities()[0]);
             }
         }
+        /// <summary>
+        /// Destroys all entities matching a Family.
+        /// </summary>
+        /// <param name="family">Family to match against.</param>
         public void DestroyEntitiesFor(Family family)
         {
             while(GetEntitiesFor(family).Count > 0)
@@ -142,10 +172,24 @@ namespace Audrey
             return _components[type].GetComponent(entityID) != null;
         }
 
+        /// <summary>
+        /// Retrieves an ImmutableList<Entity> of all the
+        /// entities in the Engine. This list is automatically
+        /// updated since its contents are stored by reference.
+        /// </summary>
+        /// <returns>ImmutableList<Entity> of the entities in the Engine.</returns>
         public ImmutableList<Entity> GetEntities()
         {
             return _entityMap.Entities;
         }
+        /// <summary>
+        /// Retrieves an ImmutableList<Entity> of all the
+        /// entities in the Engine matching a Family. This list is
+        /// automatically updated since its contacts are stored by
+        /// reference.
+        /// </summary>
+        /// <param name="family">Family to match against.</param>
+        /// <returns>ImmutableList<Entity> of the entities in the Engine.</returns>
         public ImmutableList<Entity> GetEntitiesFor(Family family)
         {
             if(!_familyManagers.ContainsKey(family))

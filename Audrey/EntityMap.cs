@@ -4,8 +4,14 @@ using System.Text;
 
 namespace Audrey
 {
+    /// <summary>
+    /// Manages entity ID's and Entity wrapper.s
+    /// </summary>
     public class EntityMap
     {
+        /// <summary>
+        /// Engine this EntityMap belongs to.
+        /// </summary>
         public Engine Engine
         {
             get;
@@ -18,16 +24,32 @@ namespace Audrey
 
         private List<int> _unusedEntityIDs = new List<int>();
 
+        /// <summary>
+        /// Packed immutable list of Entity wrappers.
+        /// </summary>
         public ImmutableList<Entity> Entities;
 
+        /// <summary>
+        /// Count of all the entities (valid and invalid) in the Engine.
+        /// 
+        /// This is the same as the current capacity of the Engine.
+        /// </summary>
         public int RawEntityCount => _entityIndices.Count;
 
+        /// <summary>
+        /// Constructs a new EntityMap.
+        /// </summary>
+        /// <param name="engine">Engine this EntityMap belongs to.</param>
         public EntityMap(Engine engine)
         {
             Engine = engine;
             Entities = new ImmutableList<Entity>(_entityWrappers);
         }
 
+        /// <summary>
+        /// Creates an entity.
+        /// </summary>
+        /// <returns>Entity wrapper of the entity ID.</returns>
         public Entity CreateEntity()
         {
             int entityID;
@@ -50,6 +72,10 @@ namespace Audrey
             return _entityWrappers[_entityIndices[entityID]];
         }
 
+        /// <summary>
+        /// Removes an entity from an entity ID.
+        /// </summary>
+        /// <param name="entityID">ID of the entity.</param>
         public void RemoveEntity(int entityID)
         {
             int idx = _entityIndices[entityID];
@@ -64,6 +90,11 @@ namespace Audrey
             entity.ConvertToIndependentEntity();
         }
 
+        /// <summary>
+        /// Checks if the entity is valid within the Engine.
+        /// </summary>
+        /// <param name="entityID">ID of the Entity.</param>
+        /// <returns>True if the entity is valid within the Engine, false otherwise.</returns>
         public bool IsEntityValid(int entityID)
         {
             if(entityID < 0)
@@ -74,6 +105,11 @@ namespace Audrey
             return entityID < _entityIndices.Count;
         }
 
+        /// <summary>
+        /// Retrieves the Entity wrapper from an entity ID.
+        /// </summary>
+        /// <param name="entityID">ID of the Entity.</param>
+        /// <returns>Instance of Entity wrapper based on the ID, null if the entity is not valid.</returns>
         public Entity GetEntityWrapperFromID(int entityID)
         {
             if(!IsEntityValid(entityID))

@@ -173,6 +173,10 @@ namespace Audrey
             return Engine.HasComponent<T>(EntityID);
         }
 
+        /// <summary>
+        /// Checks if the Entity is valid within its Engine.
+        /// </summary>
+        /// <returns>True if the Entity is valid, false otherwise.</returns>
         public bool IsValid()
         {
             if(EntityID < 0)
@@ -203,6 +207,7 @@ namespace Audrey
             }
 
             EntityID = -1;
+            Engine = null;
         }
     }
 }
