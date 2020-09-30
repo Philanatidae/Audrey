@@ -56,13 +56,13 @@ namespace Audrey.Benchmark
             int count = 10000;
             for (int i = 0; i < count; i++)
             {
-                int entityID = engine.CreateEntity();
-                engine.AssignComponent<ComponentA>(entityID);
-                engine.AssignComponent<ComponentF>(entityID);
-                engine.AssignComponent<ComponentD>(entityID);
-                engine.AssignComponent<ComponentG>(entityID);
-                engine.AssignComponent<ComponentE>(entityID);
-                engine.RemoveComponent<ComponentF>(entityID);
+                Entity entity = engine.CreateEntity();
+                entity.AssignComponent<ComponentA>();
+                entity.AssignComponent<ComponentF>();
+                entity.AssignComponent<ComponentD>();
+                entity.AssignComponent<ComponentG>();
+                entity.AssignComponent<ComponentE>();
+                entity.RemoveComponent<ComponentF>();
             }
             stopwatch.Stop();
 

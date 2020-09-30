@@ -8,7 +8,7 @@ namespace Audrey
     /// </summary>
     public interface IComponentMap
     {
-        void NotifyFamilyMap(FamilyMap familyMap);
+        void RegisterFamilyManager(FamilyManager familyMap);
         void Initialize(Engine engine);
         void AddEmptyEntity();
         IComponent AssignComponent(int id);
@@ -32,7 +32,7 @@ namespace Audrey
         private List<int> _entityList = new List<int>(); // Index = index of component, value = entity ID (reverse lookup)
         private List<T> _componentList = new List<T>();
 
-        private List<FamilyMap> _familyMaps = new List<FamilyMap>(); // Family maps that this component type needs to update
+        private List<FamilyManager> _familyManagers = new List<FamilyManager>(); // Family maps that this component type needs to update
 
         public ComponentMap()
         {
@@ -61,12 +61,12 @@ namespace Audrey
         /// Register a FamilyMap for the component map to notify of
         /// components being added/removed to/from an entity.
         /// </summary>
-        /// <param name="familyMap">FamilyMap to notify of changes.</param>
-        public void NotifyFamilyMap(FamilyMap familyMap)
+        /// <param name="familyManager">FamilyMap to notify of changes.</param>
+        public void RegisterFamilyManager(FamilyManager familyManager)
         {
-            if (!_familyMaps.Contains(familyMap))
+            if (!_familyManagers.Contains(familyManager))
             {
-                _familyMaps.Add(familyMap);
+                _familyManagers.Add(familyManager);
             }
         }
 
@@ -88,7 +88,7 @@ namespace Audrey
             _entityList.Add(id);
             _componentList.Add(new T());
 
-            foreach(FamilyMap familyMap in _familyMaps)
+            foreach(FamilyManager familyMap in _familyManagers)
             {
                 familyMap.ComponentAdded<T>(id);
             }
@@ -123,7 +123,7 @@ namespace Audrey
 
             _entityIndices[id] = -1;
 
-            foreach (FamilyMap familyMap in _familyMaps)
+            foreach (FamilyManager familyMap in _familyManagers)
             {
                 familyMap.ComponentRemoved<T>(id);
             }

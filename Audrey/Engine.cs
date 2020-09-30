@@ -5,37 +5,37 @@ namespace Audrey
 {
     public class Engine
     {
-        internal List<int> Entities
+        internal List<Entity> Entities
         {
             get;
             private set;
-        } = new List<int>(); // Index = entity ID, value = version?
+        } = new List<Entity>();
         Dictionary<Type, IComponentMap> _components = new Dictionary<Type, IComponentMap>();
 
-        Dictionary<Family, FamilyMap> _familyMaps = new Dictionary<Family, FamilyMap>();
+        Dictionary<Family, FamilyManager> _familyManagers = new Dictionary<Family, FamilyManager>();
 
         public Engine()
         {
         }
 
-        public int CreateEntity()
+        public Entity CreateEntity()
         {
-            Entities.Add(Entities.Count);
-            int entityID = Entities[Entities.Count - 1];
+            Entities.Add(new Entity(this, Entities.Count));
+            Entity entity = Entities[Entities.Count - 1];
 
             foreach(IComponentMap componentMap in _components.Values)
             {
                 componentMap.AddEmptyEntity();
             }
-            foreach(FamilyMap familyMap in _familyMaps.Values)
+            foreach(FamilyManager familyMap in _familyManagers.Values)
             {
                 familyMap.AddEmptyEntity();
             }
 
-            return entityID;
+            return entity;
         }
 
-        public T AssignComponent<T>(int entityID) where T : class, IComponent, new()
+        internal T AssignComponent<T>(int entityID) where T : class, IComponent, new()
         {
             if(entityID > Entities.Count - 1)
             {
@@ -53,7 +53,7 @@ namespace Audrey
             return (T)((ComponentMap<T>)_components[type]).AssignComponent(entityID);
         }
 
-        public void RemoveComponent<T>(int entityID) where T : class, IComponent, new()
+        internal void RemoveComponent<T>(int entityID) where T : class, IComponent, new()
         {
             RemoveComponent(entityID, typeof(T));
         }
@@ -72,7 +72,7 @@ namespace Audrey
             _components[type].RemoveComponent(entityID);
         }
 
-        public T GetComponent<T>(int entityID) where T : class, IComponent, new()
+        internal T GetComponent<T>(int entityID) where T : class, IComponent, new()
         {
             if (entityID > Entities.Count - 1)
             {
@@ -89,7 +89,7 @@ namespace Audrey
             return (T)((ComponentMap<T>)_components[type]).GetComponent(entityID);
         }
 
-        public bool HasComponent<T>(int entityID) where T : class, IComponent, new()
+        internal bool HasComponent<T>(int entityID) where T : class, IComponent, new()
         {
             return HasComponent(entityID, typeof(T));
         }
@@ -108,13 +108,13 @@ namespace Audrey
             return _components[type].GetComponent(entityID) != null;
         }
 
-        public ImmutableList<int> GetEntitiesFor(Family family)
+        public ImmutableList<Entity> GetEntitiesFor(Family family)
         {
-            if(!_familyMaps.ContainsKey(family))
+            if(!_familyManagers.ContainsKey(family))
             {
-                FamilyMap familyMap = new FamilyMap(family);
-                familyMap.Initialize(this);
-                _familyMaps.Add(family, familyMap);
+                FamilyManager familyMap = new FamilyManager(family, this);
+                familyMap.Initialize();
+                _familyManagers.Add(family, familyMap);
 
                 foreach(Type compType in family._allComponents)
                 {
@@ -125,7 +125,7 @@ namespace Audrey
                         _components[compType].Initialize(this);
                     }
 
-                    _components[compType].NotifyFamilyMap(familyMap);
+                    _components[compType].RegisterFamilyManager(familyMap);
                 }
                 foreach (Type compType in family._oneComponents)
                 {
@@ -136,7 +136,7 @@ namespace Audrey
                         _components[compType].Initialize(this);
                     }
 
-                    _components[compType].NotifyFamilyMap(familyMap);
+                    _components[compType].RegisterFamilyManager(familyMap);
                 }
                 foreach (Type compType in family._excludeComponents)
                 {
@@ -147,10 +147,10 @@ namespace Audrey
                         _components[compType].Initialize(this);
                     }
 
-                    _components[compType].NotifyFamilyMap(familyMap);
+                    _components[compType].RegisterFamilyManager(familyMap);
                 }
             }
-            return _familyMaps[family].Entities;
+            return _familyManagers[family].FamilyEntities;
         }
     }
 }

@@ -10,20 +10,20 @@ namespace Audrey.Tests
         {
             Engine engine = new Engine();
 
-            int entityID = engine.CreateEntity();
-            Assert.IsTrue(entityID == 0);
+            Entity entity = engine.CreateEntity();
+            Assert.NotNull(entity);
         }
 
         [Test]
         public void EntityGetComponent()
         {
             Engine engine = new Engine();
-            int entityID = engine.CreateEntity();
+            Entity entity = engine.CreateEntity();
 
-            AudreyComponent1 comp = engine.AssignComponent<AudreyComponent1>(entityID);
+            AudreyComponent1 comp = entity.AssignComponent<AudreyComponent1>();
             Assert.IsNotNull(comp);
 
-            AudreyComponent1 getComp = engine.GetComponent<AudreyComponent1>(entityID);
+            AudreyComponent1 getComp = entity.GetComponent<AudreyComponent1>();
             Assert.AreEqual(comp, getComp);
         }
 
@@ -33,83 +33,83 @@ namespace Audrey.Tests
             Engine engine = new Engine();
             #region ENTITIES
             {
-                int entityID = engine.CreateEntity();
-                engine.AssignComponent<AudreyComponent1>(entityID);
+                Entity entity = engine.CreateEntity();
+                entity.AssignComponent<AudreyComponent1>();
             }
             {
-                int entityID = engine.CreateEntity();
-                engine.AssignComponent<AudreyComponent1>(entityID);
+                Entity entity = engine.CreateEntity();
+                entity.AssignComponent<AudreyComponent1>();
             }
             {
-                int entityID = engine.CreateEntity();
-                engine.AssignComponent<AudreyComponent1>(entityID);
-                engine.AssignComponent<AudreyComponent2>(entityID);
+                Entity entity = engine.CreateEntity();
+                entity.AssignComponent<AudreyComponent1>();
+                entity.AssignComponent<AudreyComponent2>();
             }
             {
-                int entityID = engine.CreateEntity();
-                engine.AssignComponent<AudreyComponent1>(entityID);
-                engine.AssignComponent<AudreyComponent2>(entityID);
+                Entity entity = engine.CreateEntity();
+                entity.AssignComponent<AudreyComponent1>();
+                entity.AssignComponent<AudreyComponent2>();
             }
             {
-                int entityID = engine.CreateEntity();
-                engine.AssignComponent<AudreyComponent2>(entityID);
+                Entity entity = engine.CreateEntity();
+                entity.AssignComponent<AudreyComponent2>();
             }
             {
-                int entityID = engine.CreateEntity();
-                engine.AssignComponent<AudreyComponent2>(entityID);
+                Entity entity = engine.CreateEntity();
+                entity.AssignComponent<AudreyComponent2>();
             }
             #endregion
 
             {
                 Family family = Family.One(typeof(AudreyComponent1), typeof(AudreyComponent2)).Get();
 
-                ImmutableList<int> entities = engine.GetEntitiesFor(family);
+                ImmutableList<Entity> entities = engine.GetEntitiesFor(family);
                 Assert.IsTrue(entities.Count == 6);
             }
             {
                 Family family = Family.All(typeof(AudreyComponent1)).Get();
 
-                ImmutableList<int> entities = engine.GetEntitiesFor(family);
+                ImmutableList<Entity> entities = engine.GetEntitiesFor(family);
                 Assert.IsTrue(entities.Count == 4);
             }
 
             {
                 Family family = Family.All(typeof(AudreyComponent1), typeof(AudreyComponent3)).Get();
 
-                ImmutableList<int> entities = engine.GetEntitiesFor(family);
+                ImmutableList<Entity> entities = engine.GetEntitiesFor(family);
                 Assert.IsTrue(entities.Count == 0);
 
-                int entityID = engine.CreateEntity();
-                engine.AssignComponent<AudreyComponent1>(entityID);
-                engine.AssignComponent<AudreyComponent3>(entityID);
+                Entity entity = engine.CreateEntity();
+                entity.AssignComponent<AudreyComponent1>();
+                entity.AssignComponent<AudreyComponent3>();
                 Assert.IsTrue(entities.Count == 1);
 
-                engine.RemoveComponent<AudreyComponent1>(entityID);
+                entity.RemoveComponent<AudreyComponent1>();
                 Assert.IsTrue(entities.Count == 0);
 
-                engine.AssignComponent<AudreyComponent1>(entityID);
+                entity.AssignComponent<AudreyComponent1>();
             }
 
             {
                 Family family = Family.All(typeof(AudreyComponent1)).Exclude(typeof(AudreyComponent2)).Get();
 
-                ImmutableList<int> entities = engine.GetEntitiesFor(family);
+                ImmutableList<Entity> entities = engine.GetEntitiesFor(family);
                 Assert.IsTrue(entities.Count == 3);
             }
 
             {
                 Family family = Family.All(typeof(AudreyComponent1)).Exclude(typeof(AudreyComponent3)).Get();
 
-                int entityID = engine.CreateEntity();
-                engine.AssignComponent<AudreyComponent1>(entityID);
+                Entity entity = engine.CreateEntity();
+                entity.AssignComponent<AudreyComponent1>();
 
-                ImmutableList<int> entities = engine.GetEntitiesFor(family);
+                ImmutableList<Entity> entities = engine.GetEntitiesFor(family);
                 Assert.IsTrue(entities.Count == 5);
 
-                engine.AssignComponent<AudreyComponent3>(entityID);
+                entity.AssignComponent<AudreyComponent3>();
                 Assert.IsTrue(entities.Count == 4);
 
-                engine.RemoveComponent<AudreyComponent3>(entityID);
+                entity.RemoveComponent<AudreyComponent3>();
                 Assert.IsTrue(entities.Count == 5);
             }
         }
