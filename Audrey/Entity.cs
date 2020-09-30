@@ -23,7 +23,7 @@ namespace Audrey
         internal int EntityID
         {
             get;
-            private set;
+            set;
         }
 
         internal Entity(Engine engine, int entityID)
@@ -63,10 +63,10 @@ namespace Audrey
         /// Removes a component from the Entity. Not preferred over
         /// `RemoveComponent<T>`, however is sometimes useful.
         /// </summary>
-        /// <param name="component">Component to remove.</param>
-        public void RemoveRawComponent(IComponent component)
+        /// <param name="componentType">Component to remove.</param>
+        public void RemoveRawComponent(Type componentType)
         {
-            Engine.RemoveComponent(EntityID, component.GetType());
+            Engine.RemoveComponent(EntityID, componentType);
         }
         /// <summary>
         /// Retrieves a component from the Entity.

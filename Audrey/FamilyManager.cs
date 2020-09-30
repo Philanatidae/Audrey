@@ -106,7 +106,7 @@ namespace Audrey
         public void Initialize()
         {
             // Loop over every entity, valid or not
-            for (int i = 0; i < Engine.Entities.Count; i++)
+            for (int i = 0; i < Engine._entityMap.RawEntityCount; i++)
             {
                 // Loop through `All` Components
                 foreach (Type compType in _allComponentsMap.Keys)
@@ -114,7 +114,7 @@ namespace Audrey
                     // Add a placeholder of `false`
                     _allComponentsMap[compType].Add(false);
                     // If valid
-                    if (Engine.Entities[i] != null)
+                    if (Engine._entityMap.IsEntityValid(i))
                     {
                         // If the entity has the component
                         if (Engine.HasComponent(i, compType))
@@ -130,7 +130,7 @@ namespace Audrey
                     // Add a placeholder of `false`
                     _oneComponentsMap[compType].Add(false);
                     // If valid
-                    if (Engine.Entities[i] != null)
+                    if (Engine._entityMap.IsEntityValid(i))
                     {
                         // If the entity has the component
                         if (Engine.HasComponent(i, compType))
@@ -146,7 +146,7 @@ namespace Audrey
                     // Add a placeholder of `false`
                     _excludeComponentsMap[compType].Add(false);
                     // If valid
-                    if (Engine.Entities[i] != null)
+                    if (Engine._entityMap.IsEntityValid(i))
                     {
                         // If the entity has the component
                         if (Engine.HasComponent(i, compType))
@@ -370,7 +370,7 @@ namespace Audrey
                 return;
             }
             _familyEntityIndices.Add(entityID);
-            _familyEntities.Add(Engine.Entities[entityID]);
+            _familyEntities.Add(Engine._entityMap.GetEntityWrapperFromID(entityID));
         }
         private void RemoveEntityFromFamily(int entityID)
         {

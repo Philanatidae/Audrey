@@ -45,7 +45,7 @@ namespace Audrey
         /// <param name="engine">Engine this component map belongs to.</param>
         public void Initialize(Engine engine)
         {
-            for (int i = 0; i < engine.Entities.Count; i++)
+            for (int i = 0; i < engine._entityMap.RawEntityCount; i++)
             {
                 _entityIndices.Add(-1);
             }

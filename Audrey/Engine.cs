@@ -6,23 +6,20 @@ namespace Audrey
 {
     public class Engine
     {
-        internal List<Entity> Entities
-        {
-            get;
-            private set;
-        } = new List<Entity>();
-        Dictionary<Type, IComponentMap> _components = new Dictionary<Type, IComponentMap>();
+        readonly internal EntityMap _entityMap;
 
-        Dictionary<Family, FamilyManager> _familyManagers = new Dictionary<Family, FamilyManager>();
+        internal Dictionary<Type, IComponentMap> _components = new Dictionary<Type, IComponentMap>();
+
+        internal Dictionary<Family, FamilyManager> _familyManagers = new Dictionary<Family, FamilyManager>();
 
         public Engine()
         {
+            _entityMap = new EntityMap(this);
         }
 
         public Entity CreateEntity()
         {
-            Entities.Add(new Entity(this, Entities.Count));
-            Entity entity = Entities[Entities.Count - 1];
+            Entity entity = _entityMap.CreateEntity();
 
             foreach(IComponentMap componentMap in _components.Values)
             {
@@ -36,13 +33,31 @@ namespace Audrey
             return entity;
         }
 
+        public void DestroyEntity(Entity entity)
+        {
+            if(!_entityMap.IsEntityValid(entity.EntityID))
+            {
+                return;
+            }
+
+            foreach(Type componentType in _components.Keys)
+            {
+                if(entity.GetRawComponent(componentType) != null)
+                {
+                    entity.RemoveRawComponent(componentType);
+                }
+            }
+
+            _entityMap.RemoveEntity(entity.EntityID);
+        }
+
         internal T AssignComponent<T>(int entityID) where T : class, IComponent, new()
         {
             return (T)AddRawComponent(entityID, new T());
         }
         internal IComponent AddRawComponent(int entityID, IComponent component)
         {
-            if (entityID > Entities.Count - 1)
+            if (!_entityMap.IsEntityValid(entityID))
             {
                 throw new EntityNotValidException();
             }
@@ -65,7 +80,7 @@ namespace Audrey
         }
         internal void RemoveComponent(int entityID, Type type)
         {
-            if (entityID > Entities.Count - 1)
+            if (!_entityMap.IsEntityValid(entityID))
             {
                 throw new EntityNotValidException();
             }
@@ -89,7 +104,7 @@ namespace Audrey
                 throw new TypeNotComponentException();
             }
 
-            if (entityID > Entities.Count - 1)
+            if (!_entityMap.IsEntityValid(entityID))
             {
                 throw new EntityNotValidException();
             }
@@ -108,7 +123,7 @@ namespace Audrey
         }
         internal bool HasComponent(int entityID, Type type)
         {
-            if (entityID > Entities.Count - 1)
+            if (!_entityMap.IsEntityValid(entityID))
             {
                 throw new EntityNotValidException();
             }
@@ -121,6 +136,10 @@ namespace Audrey
             return _components[type].GetComponent(entityID) != null;
         }
 
+        public ImmutableList<Entity> GetEntities()
+        {
+            return _entityMap.Entities;
+        }
         public ImmutableList<Entity> GetEntitiesFor(Family family)
         {
             if(!_familyManagers.ContainsKey(family))
