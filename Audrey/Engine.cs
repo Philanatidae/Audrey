@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Audrey.Exceptions;
+using System;
 using System.Collections.Generic;
 
 namespace Audrey
@@ -37,20 +38,25 @@ namespace Audrey
 
         internal T AssignComponent<T>(int entityID) where T : class, IComponent, new()
         {
-            if(entityID > Entities.Count - 1)
+            return (T)AddRawComponent(entityID, new T());
+        }
+        internal IComponent AddRawComponent(int entityID, IComponent component)
+        {
+            if (entityID > Entities.Count - 1)
             {
-                throw new Exception();
+                throw new EntityNotValidException();
             }
 
-            Type type = typeof(T);
+            Type type = component.GetType();
 
-            if(!_components.ContainsKey(type))
+            if (!_components.ContainsKey(type))
             {
-                _components.Add(type, new ComponentMap<T>());
+                Type componentMapType = typeof(ComponentMap<>).MakeGenericType(type);
+                _components.Add(type, (IComponentMap)Activator.CreateInstance(componentMapType));
                 _components[type].Initialize(this);
             }
 
-            return (T)((ComponentMap<T>)_components[type]).AssignComponent(entityID);
+            return _components[type].AddRawComponent(entityID, component);
         }
 
         internal void RemoveComponent<T>(int entityID) where T : class, IComponent, new()
@@ -61,7 +67,7 @@ namespace Audrey
         {
             if (entityID > Entities.Count - 1)
             {
-                throw new Exception();
+                throw new EntityNotValidException();
             }
 
             if(!_components.ContainsKey(type))
@@ -74,19 +80,26 @@ namespace Audrey
 
         internal T GetComponent<T>(int entityID) where T : class, IComponent, new()
         {
-            if (entityID > Entities.Count - 1)
+            return (T)GetComponent(entityID, typeof(T));
+        }
+        internal IComponent GetComponent(int entityID, Type compType)
+        {
+            if(!typeof(IComponent).IsAssignableFrom(compType))
             {
-                throw new Exception();
+                throw new TypeNotComponentException();
             }
 
-            Type type = typeof(T);
+            if (entityID > Entities.Count - 1)
+            {
+                throw new EntityNotValidException();
+            }
 
-            if (!_components.ContainsKey(type))
+            if (!_components.ContainsKey(compType))
             {
                 return null;
             }
 
-            return (T)((ComponentMap<T>)_components[type]).GetComponent(entityID);
+            return _components[compType].GetComponent(entityID);
         }
 
         internal bool HasComponent<T>(int entityID) where T : class, IComponent, new()
@@ -97,7 +110,7 @@ namespace Audrey
         {
             if (entityID > Entities.Count - 1)
             {
-                throw new Exception();
+                throw new EntityNotValidException();
             }
 
             if (!_components.ContainsKey(type))

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Audrey.Exceptions;
+using System;
 using System.Collections.Generic;
 
 namespace Audrey
@@ -11,7 +12,7 @@ namespace Audrey
         void RegisterFamilyManager(FamilyManager familyMap);
         void Initialize(Engine engine);
         void AddEmptyEntity();
-        IComponent AssignComponent(int id);
+        IComponent AddRawComponent(int id, IComponent component);
         void RemoveComponent(int id);
         IComponent GetComponent(int id);
     }
@@ -71,22 +72,27 @@ namespace Audrey
         }
 
         /// <summary>
-        /// Assign a component to an entity.
+        /// Adds a component to an entity.
         /// </summary>
         /// <param name="id">ID of the entity.</param>
         /// <returns>Instance of the component assigned to the entity.</returns>
-        public IComponent AssignComponent(int id)
+        public IComponent AddRawComponent(int id, IComponent component)
         {
+            if(!(component is T))
+            {
+                throw new ComponentDoesNotMatchException();
+            }
+
             if(id > _entityIndices.Count - 1)
             {
-                throw new Exception();
+                throw new EntityNotValidException();
             }
 
             int idx = _entityList.Count;
             _entityIndices[id] = idx;
 
             _entityList.Add(id);
-            _componentList.Add(new T());
+            _componentList.Add((T)component);
 
             foreach(FamilyManager familyMap in _familyManagers)
             {
@@ -103,7 +109,7 @@ namespace Audrey
         {
             if (id > _entityIndices.Count - 1)
             {
-                throw new Exception();
+                throw new EntityNotValidException();
             }
 
             int idx = _entityIndices[id];
@@ -138,7 +144,7 @@ namespace Audrey
         {
             if (id > _entityIndices.Count - 1)
             {
-                throw new Exception();
+                throw new EntityNotValidException();
             }
 
             if(_entityIndices[id] < 0)
