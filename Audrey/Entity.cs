@@ -1,5 +1,6 @@
 ﻿using Audrey.Exceptions;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Audrey
@@ -26,6 +27,8 @@ namespace Audrey
             set;
         }
 
+        internal Dictionary<Type, IComponent> _components = null;
+
         internal Entity(Engine engine, int entityID)
         {
             Engine = engine;
@@ -39,6 +42,18 @@ namespace Audrey
         /// <returns>An instance of the component.</returns>
         public T AssignComponent<T>() where T : class, IComponent, new()
         {
+            if(IsIndependent())
+            {
+                if(_components.ContainsKey(typeof(T)))
+                {
+                    throw new ComponentAlreadyExistsException();
+                }
+
+                T comp = new T();
+                _components.Add(typeof(T), comp);
+                return comp;
+            }
+
             return Engine.AssignComponent<T>(EntityID);
         }
         /// <summary>
@@ -49,6 +64,17 @@ namespace Audrey
         /// <returns>An instance of the component.</returns>
         public IComponent AddRawComponent(IComponent component)
         {
+            if(IsIndependent())
+            {
+                if (_components.ContainsKey(component.GetType()))
+                {
+                    throw new ComponentAlreadyExistsException();
+                }
+
+                _components.Add(component.GetType(), component);
+                return component;
+            }
+
             return Engine.AddRawComponent(EntityID, component);
         }
         /// <summary>
@@ -57,6 +83,15 @@ namespace Audrey
         /// <typeparam name="T">Component to remove.</typeparam>
         public void RemoveComponent<T>() where T : class, IComponent, new()
         {
+            if(IsIndependent())
+            {
+                if(_components.ContainsKey(typeof(T)))
+                {
+                    _components.Remove(typeof(T));
+                }
+                return;
+            }
+
             Engine.RemoveComponent<T>(EntityID);
         }
         /// <summary>
@@ -66,6 +101,20 @@ namespace Audrey
         /// <param name="componentType">Component to remove.</param>
         public void RemoveRawComponent(Type componentType)
         {
+            if (IsIndependent())
+            {
+                if (!typeof(IComponent).IsAssignableFrom(componentType))
+                {
+                    throw new TypeNotComponentException();
+                }
+
+                if (_components.ContainsKey(componentType))
+                {
+                    _components.Remove(componentType);
+                }
+                return;
+            }
+
             Engine.RemoveComponent(EntityID, componentType);
         }
         /// <summary>
@@ -75,6 +124,15 @@ namespace Audrey
         /// <returns>An instance of the component, or null if the entity does not have the component.</returns>
         public T GetComponent<T>() where T : class, IComponent, new()
         {
+            if(IsIndependent())
+            {
+                if(_components.ContainsKey(typeof(T)))
+                {
+                    return (T)_components[typeof(T)];
+                }
+                return null;
+            }
+
             return Engine.GetComponent<T>(EntityID);
         }
         /// <summary>
@@ -89,6 +147,15 @@ namespace Audrey
             {
                 throw new TypeNotComponentException();
             }
+            if (IsIndependent())
+            {
+                if (_components.ContainsKey(componentType))
+                {
+                    return _components[componentType];
+                }
+                return null;
+            }
+
             return Engine.GetComponent(EntityID, componentType);
         }
         /// <summary>
@@ -98,7 +165,44 @@ namespace Audrey
         /// <returns>True if the Entity contains the component, false otherwise.</returns>
         public bool HasComponent<T>() where T : class, IComponent, new()
         {
+            if(IsIndependent())
+            {
+                return GetComponent<T>() == null;
+            }
+
             return Engine.HasComponent<T>(EntityID);
+        }
+
+        public bool IsValid()
+        {
+            if(EntityID < 0)
+            {
+                return false;
+            }
+
+            return Engine._entityMap.IsEntityValid(EntityID);
+        }
+
+        internal bool IsIndependent()
+        {
+            return EntityID == -1;
+        }
+        internal void ConvertToIndependentEntity()
+        {
+            _components = new Dictionary<Type, IComponent>();
+
+            foreach (Type componentType in _components.Keys)
+            {
+                IComponent component = GetRawComponent(componentType);
+                if (GetRawComponent(componentType) != null)
+                {
+                    RemoveRawComponent(componentType);
+
+                    _components.Add(componentType, component);
+                }
+            }
+
+            EntityID = -1;
         }
     }
 }

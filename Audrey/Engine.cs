@@ -40,15 +40,21 @@ namespace Audrey
                 return;
             }
 
-            foreach(Type componentType in _components.Keys)
-            {
-                if(entity.GetRawComponent(componentType) != null)
-                {
-                    entity.RemoveRawComponent(componentType);
-                }
-            }
-
             _entityMap.RemoveEntity(entity.EntityID);
+        }
+        public void DestroyAllEntities()
+        {
+            while(GetEntities().Count > 0)
+            {
+                DestroyEntity(GetEntities()[0]);
+            }
+        }
+        public void DestroyEntitiesFor(Family family)
+        {
+            while(GetEntitiesFor(family).Count > 0)
+            {
+                DestroyEntity(GetEntitiesFor(family)[0]);
+            }
         }
 
         internal T AssignComponent<T>(int entityID) where T : class, IComponent, new()

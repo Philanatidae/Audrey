@@ -77,9 +77,11 @@ namespace Audrey
         /// <returns>True if the entity matches the Family, otherwise false.</returns>
         public bool Matches(Engine engine, int entityID)
         {
+            Entity entity = engine._entityMap.GetEntityWrapperFromID(entityID);
+
             foreach(Type type in _allComponents)
             {
-                if(!engine.HasComponent(entityID, type))
+                if(entity.GetRawComponent(type) == null)
                 {
                     return false;
                 }
@@ -87,7 +89,7 @@ namespace Audrey
             bool containsOne = false;
             foreach (Type type in _oneComponents)
             {
-                if (engine.HasComponent(entityID, type))
+                if (entity.GetRawComponent(type) != null)
                 {
                     containsOne = true;
                     break;
@@ -100,7 +102,7 @@ namespace Audrey
 
             foreach(Type type in _excludeComponents)
             {
-                if(engine.HasComponent(entityID, type))
+                if(entity.GetRawComponent(type) != null)
                 {
                     return false;
                 }

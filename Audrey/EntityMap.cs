@@ -61,7 +61,7 @@ namespace Audrey
             _entityIndices[entityID] = -1;
 
             _unusedEntityIDs.Add(entity.EntityID);
-            entity.EntityID = -1;
+            entity.ConvertToIndependentEntity();
         }
 
         public bool IsEntityValid(int entityID)
