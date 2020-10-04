@@ -72,13 +72,10 @@ namespace Audrey
         /// Determines if an entity matches the component
         /// make-up of this Family.
         /// </summary>
-        /// <param name="engine">Engine the entity belongs to.</param>
-        /// <param name="entityID">ID of the entity.</param>
+        /// <param name="entity">Entity to compare against.</param>
         /// <returns>True if the entity matches the Family, otherwise false.</returns>
-        public bool Matches(Engine engine, int entityID)
+        public bool Matches(Entity entity)
         {
-            Entity entity = engine._entityMap.GetEntityWrapperFromID(entityID);
-
             foreach(Type type in _allComponents)
             {
                 if(entity.GetRawComponent(type) == null)

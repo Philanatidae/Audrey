@@ -41,7 +41,7 @@ namespace Audrey
         /// <typeparam name="T">Component type to add.</typeparam>
         /// <param name="comp">Component to add.</param>
         /// <returns>An instance of the component.</returns>
-        public T AddComponent<T>(T comp) where T : class, IComponent, new()
+        public T AddComponent<T>(T comp) where T : class, IComponent
         {
             if(IsIndependent())
             {
@@ -81,7 +81,7 @@ namespace Audrey
         /// Removes a component from the Entity.
         /// </summary>
         /// <typeparam name="T">Component to remove.</typeparam>
-        public void RemoveComponent<T>() where T : class, IComponent, new()
+        public void RemoveComponent<T>() where T : class, IComponent
         {
             if(IsIndependent())
             {
@@ -122,7 +122,7 @@ namespace Audrey
         /// </summary>
         /// <typeparam name="T">Component to retrieve.</typeparam>
         /// <returns>An instance of the component, or null if the entity does not have the component.</returns>
-        public T GetComponent<T>() where T : class, IComponent, new()
+        public T GetComponent<T>() where T : class, IComponent
         {
             if(IsIndependent())
             {
@@ -163,7 +163,7 @@ namespace Audrey
         /// </summary>
         /// <typeparam name="T">Component to check against.</typeparam>
         /// <returns>True if the Entity contains the component, false otherwise.</returns>
-        public bool HasComponent<T>() where T : class, IComponent, new()
+        public bool HasComponent<T>() where T : class, IComponent
         {
             if(IsIndependent())
             {
