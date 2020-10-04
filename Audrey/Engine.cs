@@ -87,9 +87,9 @@ namespace Audrey
             }
         }
 
-        internal T AssignComponent<T>(int entityID) where T : class, IComponent, new()
+        internal T AddComponent<T>(int entityID, T comp) where T : class, IComponent, new()
         {
-            return (T)AddRawComponent(entityID, new T());
+            return (T)AddRawComponent(entityID, comp);
         }
         internal IComponent AddRawComponent(int entityID, IComponent component)
         {

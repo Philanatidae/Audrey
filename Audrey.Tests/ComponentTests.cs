@@ -12,7 +12,7 @@ namespace Audrey.Tests
             Engine engine = new Engine();
             Entity entity = engine.CreateEntity();
 
-            Assert.NotNull(entity.AssignComponent<TestComponent1>());
+            Assert.NotNull(entity.AddComponent(new TestComponent1()));
         }
         
         [Test]
@@ -23,7 +23,7 @@ namespace Audrey.Tests
 
             Assert.Null(entity.GetComponent<TestComponent1>());
 
-            Assert.NotNull(entity.AssignComponent<TestComponent1>());
+            Assert.NotNull(entity.AddComponent(new TestComponent1()));
 
             Assert.NotNull(entity.GetComponent<TestComponent1>());
         }
@@ -36,7 +36,7 @@ namespace Audrey.Tests
 
             Assert.IsFalse(entity.HasComponent<TestComponent1>());
 
-            Assert.NotNull(entity.AssignComponent<TestComponent1>());
+            Assert.NotNull(entity.AddComponent(new TestComponent1()));
 
             Assert.IsTrue(entity.HasComponent<TestComponent1>());
         }
@@ -47,7 +47,7 @@ namespace Audrey.Tests
             Engine engine = new Engine();
             Entity entity = engine.CreateEntity();
 
-            entity.AssignComponent<TestComponent1>();
+            entity.AddComponent(new TestComponent1());
 
             Assert.IsTrue(entity.HasComponent<TestComponent1>());
 

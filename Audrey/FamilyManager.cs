@@ -153,6 +153,13 @@ namespace Audrey
                         {
                             // Simulate the component being added to the entity within the FamilyManager
                             ComponentAdded(i, compType);
+                        } else
+                        {
+                            // Simulate the component being removed, this is necessary for
+                            // Exclude becuase this is only time an entity can qualify
+                            // for the Family by having a component removed (this does not
+                            // apply to All and One).
+                            ComponentRemoved(i, compType);
                         }
                     }
                 }

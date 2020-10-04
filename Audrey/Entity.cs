@@ -36,11 +36,12 @@ namespace Audrey
         }
 
         /// <summary>
-        /// Assigns an empty component to the Entity.
+        /// Adds a component to the Entity.
         /// </summary>
-        /// <typeparam name="T">Component to assign.</typeparam>
+        /// <typeparam name="T">Component type to add.</typeparam>
+        /// <param name="comp">Component to add.</param>
         /// <returns>An instance of the component.</returns>
-        public T AssignComponent<T>() where T : class, IComponent, new()
+        public T AddComponent<T>(T comp) where T : class, IComponent, new()
         {
             if(IsIndependent())
             {
@@ -49,12 +50,11 @@ namespace Audrey
                     throw new ComponentAlreadyExistsException();
                 }
 
-                T comp = new T();
                 _components.Add(typeof(T), comp);
                 return comp;
             }
 
-            return Engine.AssignComponent<T>(EntityID);
+            return Engine.AddComponent<T>(EntityID, comp);
         }
         /// <summary>
         /// Adds a component to the Entity. Not preferred over

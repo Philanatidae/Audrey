@@ -57,11 +57,11 @@ namespace Audrey.Benchmark
             for (int i = 0; i < count; i++)
             {
                 Entity entity = engine.CreateEntity();
-                entity.AssignComponent<ComponentA>();
-                entity.AssignComponent<ComponentF>();
-                entity.AssignComponent<ComponentD>();
-                entity.AssignComponent<ComponentG>();
-                entity.AssignComponent<ComponentE>();
+                entity.AddComponent(new ComponentA());
+                entity.AddComponent(new ComponentB());
+                entity.AddComponent(new ComponentD());
+                entity.AddComponent(new ComponentG());
+                entity.AddComponent(new ComponentE());
                 entity.RemoveComponent<ComponentF>();
             }
             stopwatch.Stop();
