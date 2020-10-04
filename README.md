@@ -10,7 +10,9 @@ The current version of Audrey is `v1.1`.
 
 # Installing
 
-Download the repository as a zip (or add as a submodule to your project's Git repository), add the 'Audrey' project to your solution, and add Audrey as a project reference to the project you wish to use it in. Audrey does not reference other projects.
+Audrey is [available on NuGet](https://www.nuget.org/packages/Audrey), or a DLL can be downloaded in the Releases page on GitHub.
+
+Alternatively, the Audrey source code can be downloaded and the Audrey project added to the same solution as your project.
 
 # How To Use
 
