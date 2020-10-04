@@ -87,7 +87,7 @@ namespace Audrey
             }
         }
 
-        internal T AddComponent<T>(int entityID, T comp) where T : class, IComponent, new()
+        internal T AddComponent<T>(int entityID, T comp) where T : class, IComponent
         {
             return (T)AddRawComponent(entityID, comp);
         }
@@ -110,7 +110,7 @@ namespace Audrey
             return _components[type].AddRawComponent(entityID, component);
         }
 
-        internal void RemoveComponent<T>(int entityID) where T : class, IComponent, new()
+        internal void RemoveComponent<T>(int entityID) where T : class, IComponent
         {
             RemoveComponent(entityID, typeof(T));
         }
@@ -129,7 +129,7 @@ namespace Audrey
             _components[type].RemoveComponent(entityID);
         }
 
-        internal T GetComponent<T>(int entityID) where T : class, IComponent, new()
+        internal T GetComponent<T>(int entityID) where T : class, IComponent
         {
             return (T)GetComponent(entityID, typeof(T));
         }
@@ -153,7 +153,7 @@ namespace Audrey
             return _components[compType].GetComponent(entityID);
         }
 
-        internal bool HasComponent<T>(int entityID) where T : class, IComponent, new()
+        internal bool HasComponent<T>(int entityID) where T : class, IComponent
         {
             return HasComponent(entityID, typeof(T));
         }

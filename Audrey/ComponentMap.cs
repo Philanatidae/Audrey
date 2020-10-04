@@ -26,7 +26,7 @@ namespace Audrey
     /// of the component map are notified of the change.
     /// </summary>
     /// <typeparam name="T">Component that this map will represent.</typeparam>
-    internal class ComponentMap<T> : IComponentMap where T : class, IComponent, new()
+    internal class ComponentMap<T> : IComponentMap where T : class, IComponent
     {
         private List<int> _entityIndices = new List<int>(); // Sparse set, index = entity ID, value = index of componnet
 
