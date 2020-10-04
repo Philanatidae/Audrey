@@ -2,11 +2,17 @@
 
 A simple ECS for C#. This was created for my personal projects, however I decided to put the library up for others to use if they wish. Audrey is loosely based on [Ashley](https://github.com/libgdx/ashley).
 
+Audrey initially used maps of components in entities. With many entities, this turned out to have poor performance. I rewrote Audrey to use sparse sets, similar to EnTT, which greatly improved performance in my own projects. While the library as a whole is not as fast as EnTT, it remains a good choice for a simple yet performant ECS.
+
+# Version
+
+The current version of Audrey is `v1.1`.
+
 # Installing
 
 Download the repository as a zip (or add as a submodule to your project's Git repository), add the 'Audrey' project to your solution, and add Audrey as a project reference to the project you wish to use it in. Audrey does not reference other projects.
 
-# How to use
+# How To Use
 
 The heart of Audrey is the entity Engine. The entity Engine manages entities within the ECS:
 
@@ -58,8 +64,8 @@ The Engine can return lists of entities, and can return lists of entities that m
 
 # Contributing
 
-Create issues to identify bugs/improvements. Create a pull request through GitHub to help eliminate issues with Audrey. Pull requests must pass the unit tests, and if new features are added unit tests must be written for them.
+Create an issus to identify bugs/improvements. If you would like to contribute, feel free to create a pull request. Pull requests must pass the unit tests, and if new features are added unit tests must be written for them.
 
 # License
 
-MIT
+MIT. See `LICENSE`.

@@ -1,122 +1,238 @@
-﻿using System.Collections.Generic;
+﻿using Audrey.Exceptions;
+using System;
+using System.Collections.Generic;
 
 namespace Audrey
 {
     /// <summary>
-    /// A manager for Entities.
+    /// Engine manages Entities.
     /// </summary>
     public class Engine
     {
-        readonly List<Entity> _entities = new List<Entity>();
-        readonly ImmutableList<Entity> _immutableEntities;
-        readonly Dictionary<Family, List<Entity>> _familyBags = new Dictionary<Family, List<Entity>>();
-        readonly Dictionary<Family, ImmutableList<Entity>> _immutableFamilyBags = new Dictionary<Family, ImmutableList<Entity>>();
+        readonly internal EntityMap _entityMap;
+
+        internal Dictionary<Type, IComponentMap> _components = new Dictionary<Type, IComponentMap>();
+
+        internal Dictionary<Family, FamilyManager> _familyManagers = new Dictionary<Family, FamilyManager>();
 
         /// <summary>
-        /// Constructs a new Engine.
+        /// Constructs an entity Engine.
         /// </summary>
         public Engine()
         {
-            // _immutableEntities will reference _entities
-            _immutableEntities = new ImmutableList<Entity>(_entities);
+            _entityMap = new EntityMap(this);
         }
 
         /// <summary>
-        /// Creates a new Entity within this Engine.
+        /// Creates an Entity.
         /// </summary>
-        /// <returns>Entity owned by this Engine.</returns>
+        /// <returns>Entity created within the Engine.</returns>
         public Entity CreateEntity()
         {
-            Entity entity = new Entity(this);
-            _entities.Add(entity);
+            Entity entity = _entityMap.CreateEntity();
 
-            // Don't need to update bags, entitiy does not have any components
+            foreach(IComponentMap componentMap in _components.Values)
+            {
+                componentMap.AddEmptyEntity();
+            }
+            foreach(FamilyManager familyMap in _familyManagers.Values)
+            {
+                familyMap.AddEmptyEntity();
+            }
 
             return entity;
         }
 
         /// <summary>
-        /// Removes an Entity from this Engine.
+        /// Destroys an Entity. When an Entity is destroyed, it
+        /// is no longer valid within the Engine an no longer
+        /// belongs in any families. The component instances are
+        /// transferred to the Entity itself, becoming independent.
+        /// 
+        /// Independent Entities can have components added/removed,
+        /// and matches against a Family in case there are any hard
+        /// references to the Entity itself. Otherwise, the garbage
+        /// collector will clean up the Entity and its components
+        /// (this is the normal use case).
         /// </summary>
-        /// <param name="entity">Entity.</param>
+        /// <param name="entity">Entity to destroy.</param>
         public void DestroyEntity(Entity entity)
         {
-            _entities.Remove(entity);
-            UpdateFamilyBags(entity);
+            if(!_entityMap.IsEntityValid(entity.EntityID))
+            {
+                return;
+            }
+
+            _entityMap.RemoveEntity(entity.EntityID);
+        }
+        /// <summary>
+        /// Destroys all entities in the Engine.
+        /// </summary>
+        public void DestroyAllEntities()
+        {
+            while(GetEntities().Count > 0)
+            {
+                DestroyEntity(GetEntities()[0]);
+            }
+        }
+        /// <summary>
+        /// Destroys all entities matching a Family.
+        /// </summary>
+        /// <param name="family">Family to match against.</param>
+        public void DestroyEntitiesFor(Family family)
+        {
+            while(GetEntitiesFor(family).Count > 0)
+            {
+                DestroyEntity(GetEntitiesFor(family)[0]);
+            }
+        }
+
+        internal T AddComponent<T>(int entityID, T comp) where T : class, IComponent, new()
+        {
+            return (T)AddRawComponent(entityID, comp);
+        }
+        internal IComponent AddRawComponent(int entityID, IComponent component)
+        {
+            if (!_entityMap.IsEntityValid(entityID))
+            {
+                throw new EntityNotValidException();
+            }
+
+            Type type = component.GetType();
+
+            if (!_components.ContainsKey(type))
+            {
+                Type componentMapType = typeof(ComponentMap<>).MakeGenericType(type);
+                _components.Add(type, (IComponentMap)Activator.CreateInstance(componentMapType));
+                _components[type].Initialize(this);
+            }
+
+            return _components[type].AddRawComponent(entityID, component);
+        }
+
+        internal void RemoveComponent<T>(int entityID) where T : class, IComponent, new()
+        {
+            RemoveComponent(entityID, typeof(T));
+        }
+        internal void RemoveComponent(int entityID, Type type)
+        {
+            if (!_entityMap.IsEntityValid(entityID))
+            {
+                throw new EntityNotValidException();
+            }
+
+            if(!_components.ContainsKey(type))
+            {
+                return;
+            }
+
+            _components[type].RemoveComponent(entityID);
+        }
+
+        internal T GetComponent<T>(int entityID) where T : class, IComponent, new()
+        {
+            return (T)GetComponent(entityID, typeof(T));
+        }
+        internal IComponent GetComponent(int entityID, Type compType)
+        {
+            if(!typeof(IComponent).IsAssignableFrom(compType))
+            {
+                throw new TypeNotComponentException();
+            }
+
+            if (!_entityMap.IsEntityValid(entityID))
+            {
+                throw new EntityNotValidException();
+            }
+
+            if (!_components.ContainsKey(compType))
+            {
+                return null;
+            }
+
+            return _components[compType].GetComponent(entityID);
+        }
+
+        internal bool HasComponent<T>(int entityID) where T : class, IComponent, new()
+        {
+            return HasComponent(entityID, typeof(T));
+        }
+        internal bool HasComponent(int entityID, Type type)
+        {
+            if (!_entityMap.IsEntityValid(entityID))
+            {
+                throw new EntityNotValidException();
+            }
+
+            if (!_components.ContainsKey(type))
+            {
+                return false;
+            }
+
+            return _components[type].GetComponent(entityID) != null;
         }
 
         /// <summary>
-        /// Gets a ImmutableList<Entity> reference for the Entities in the Engine.
+        /// Retrieves an ImmutableList<Entity> of all the
+        /// entities in the Engine. This list is automatically
+        /// updated since its contents are stored by reference.
         /// </summary>
-        /// <returns>Entities within this Engine.</returns>
+        /// <returns>ImmutableList<Entity> of the entities in the Engine.</returns>
         public ImmutableList<Entity> GetEntities()
         {
-            // Return immutable list so it can not be changed
-            return _immutableEntities;
+            return _entityMap.Entities;
         }
-
         /// <summary>
-        /// Gets a ImmutableList<Entity> reference for the Entities in the Engine that matches the Family.
+        /// Retrieves an ImmutableList<Entity> of all the
+        /// entities in the Engine matching a Family. This list is
+        /// automatically updated since its contacts are stored by
+        /// reference.
         /// </summary>
-        /// <returns>Entities within this Engine that match the Family.</returns>
-        /// <param name="family">Family to match Entities with.</param>
+        /// <param name="family">Family to match against.</param>
+        /// <returns>ImmutableList<Entity> of the entities in the Engine.</returns>
         public ImmutableList<Entity> GetEntitiesFor(Family family)
         {
-            if (!_familyBags.ContainsKey(family))
+            if(!_familyManagers.ContainsKey(family))
             {
-                InitFamilyBag(family);
-            }
+                FamilyManager familyMap = new FamilyManager(family, this);
+                familyMap.Initialize();
+                _familyManagers.Add(family, familyMap);
 
-            // Return immutable list so it can not be changed
-            return _immutableFamilyBags[family];
-        }
-
-        void InitFamilyBag(Family family)
-        {
-            List<Entity> bag = new List<Entity>();
-            _familyBags.Add(family, bag);
-            // Make an immutable list to reference the real list
-            _immutableFamilyBags.Add(family, new ImmutableList<Entity>(_familyBags[family]));
-
-            for (int i = 0; i < _entities.Count; i++)
-            {
-                Entity entity = _entities[i];
-
-                if (family.Matches(entity))
+                foreach(Type compType in family._allComponents)
                 {
-                    bag.Add(entity);
+                    if(!_components.ContainsKey(compType))
+                    {
+                        Type componentMapType = typeof(ComponentMap<>).MakeGenericType(compType);
+                        _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType));
+                        _components[compType].Initialize(this);
+                    }
+
+                    _components[compType].RegisterFamilyManager(familyMap);
+                }
+                foreach (Type compType in family._oneComponents)
+                {
+                    if (!_components.ContainsKey(compType))
+                    {
+                        Type componentMapType = typeof(ComponentMap<>).MakeGenericType(compType);
+                        _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType));
+                        _components[compType].Initialize(this);
+                    }
+
+                    _components[compType].RegisterFamilyManager(familyMap);
+                }
+                foreach (Type compType in family._excludeComponents)
+                {
+                    if (!_components.ContainsKey(compType))
+                    {
+                        Type componentMapType = typeof(ComponentMap<>).MakeGenericType(compType);
+                        _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType));
+                        _components[compType].Initialize(this);
+                    }
+
+                    _components[compType].RegisterFamilyManager(familyMap);
                 }
             }
-        }
-
-        internal void UpdateFamilyBags(Entity entity)
-        {
-            foreach (Family family in _familyBags.Keys)
-            {
-                UpdateFamilyBag(family, entity);
-            }
-        }
-
-        void UpdateFamilyBag(Family family, Entity entity)
-        {
-            List<Entity> bag = _familyBags[family];
-            if (_entities.Contains(entity)) // Addition/update
-            {
-                // Entity matches the family but is not in the bag
-                if (family.Matches(entity) && !bag.Contains(entity))
-                {
-                    bag.Add(entity);
-                }
-                // Entity does not match the family but is in the bag
-                if (!family.Matches(entity) && bag.Contains(entity))
-                {
-                    bag.Remove(entity);
-                }
-            }
-            else
-            { // Removal
-                bag.Remove(entity);
-            }
+            return _familyManagers[family].FamilyEntities;
         }
     }
 }

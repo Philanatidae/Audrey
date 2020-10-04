@@ -1,124 +1,213 @@
-﻿using System;
+﻿using Audrey.Exceptions;
+using System;
 using System.Collections.Generic;
-using Audrey.Exceptions;
+using System.ComponentModel;
 
 namespace Audrey
 {
     /// <summary>
-    /// A collection of IComponent.
+    /// An Entity within the Engine.
     /// </summary>
     public class Entity
     {
-        readonly Engine _engine;
-        List<IComponent> _components = new List<IComponent>();
-
-        internal Entity(Engine engine)
+        /// <summary>
+        /// Engine this Entity belongs to.
+        /// </summary>
+        public Engine Engine
         {
-            _engine = engine;
-            Family.All(typeof(Family)).Get();
+            get;
+            private set;
+        }
+        /// <summary>
+        /// ID of the Entity within the Engine.
+        /// </summary>
+        internal int EntityID
+        {
+            get;
+            set;
+        }
+
+        internal Dictionary<Type, IComponent> _components = null;
+
+        internal Entity(Engine engine, int entityID)
+        {
+            Engine = engine;
+            EntityID = entityID;
         }
 
         /// <summary>
-        /// Determines if the Entity has a IComponent.
+        /// Adds a component to the Entity.
         /// </summary>
-        /// <returns><c>true</c>, if the Entity has the IComponent, <c>false</c> otherwise.</returns>
-        /// <typeparam name="T">IComponent to check.</typeparam>
-        public bool HasComponent<T>() where T : IComponent
+        /// <typeparam name="T">Component type to add.</typeparam>
+        /// <param name="comp">Component to add.</param>
+        /// <returns>An instance of the component.</returns>
+        public T AddComponent<T>(T comp) where T : class, IComponent, new()
         {
-            return HasComponent(typeof(T));
-        }
-
-        /// <summary>
-        /// Determines if the Entity has a IComponent.
-        /// </summary>
-        /// <returns><c>true</c>, if the Entity has the IComponent, <c>false</c> otherwise.</returns>
-        /// <param name="componentType">IComponent type to check.</param>
-        public bool HasComponent(Type componentType)
-        {
-            if (!componentType.IsComponent())
+            if(IsIndependent())
             {
-                throw new TypeNotComponentException();
+                if(_components.ContainsKey(typeof(T)))
+                {
+                    throw new ComponentAlreadyExistsException();
+                }
+
+                _components.Add(typeof(T), comp);
+                return comp;
             }
 
-            return GetComponent(componentType) != null;
+            return Engine.AddComponent<T>(EntityID, comp);
         }
-
         /// <summary>
-        /// Retrieves an IComponent instance for this Entity.
+        /// Adds a component to the Entity. Not preferred over
+        /// `AssignComponent<T>`, however is sometimes useful.
         /// </summary>
-        /// <returns>IComponent instance if found, null otherwise.</returns>
-        /// <typeparam name="T">IComponent to retrieve.</typeparam>
-        public T GetComponent<T>() where T : IComponent
+        /// <param name="component">Component to add to the Entity.</param>
+        /// <returns>An instance of the component.</returns>
+        public IComponent AddRawComponent(IComponent component)
         {
-            return (T)GetComponent(typeof(T));
-        }
+            if(IsIndependent())
+            {
+                if (_components.ContainsKey(component.GetType()))
+                {
+                    throw new ComponentAlreadyExistsException();
+                }
 
+                _components.Add(component.GetType(), component);
+                return component;
+            }
+
+            return Engine.AddRawComponent(EntityID, component);
+        }
+        /// <summary>
+        /// Removes a component from the Entity.
+        /// </summary>
+        /// <typeparam name="T">Component to remove.</typeparam>
+        public void RemoveComponent<T>() where T : class, IComponent, new()
+        {
+            if(IsIndependent())
+            {
+                if(_components.ContainsKey(typeof(T)))
+                {
+                    _components.Remove(typeof(T));
+                }
+                return;
+            }
+
+            Engine.RemoveComponent<T>(EntityID);
+        }
+        /// <summary>
+        /// Removes a component from the Entity. Not preferred over
+        /// `RemoveComponent<T>`, however is sometimes useful.
+        /// </summary>
+        /// <param name="componentType">Component to remove.</param>
+        public void RemoveRawComponent(Type componentType)
+        {
+            if (IsIndependent())
+            {
+                if (!typeof(IComponent).IsAssignableFrom(componentType))
+                {
+                    throw new TypeNotComponentException();
+                }
+
+                if (_components.ContainsKey(componentType))
+                {
+                    _components.Remove(componentType);
+                }
+                return;
+            }
+
+            Engine.RemoveComponent(EntityID, componentType);
+        }
         /// <summary>
         /// Retrieves a component from the Entity.
         /// </summary>
-        /// <returns>IComponent instance if found, null otherwise.</returns>
-        /// <param name="componentType">IComponent type to retrieve.</param>
-        public object GetComponent(Type componentType)
+        /// <typeparam name="T">Component to retrieve.</typeparam>
+        /// <returns>An instance of the component, or null if the entity does not have the component.</returns>
+        public T GetComponent<T>() where T : class, IComponent, new()
         {
-            if (!componentType.IsComponent())
+            if(IsIndependent())
+            {
+                if(_components.ContainsKey(typeof(T)))
+                {
+                    return (T)_components[typeof(T)];
+                }
+                return null;
+            }
+
+            return Engine.GetComponent<T>(EntityID);
+        }
+        /// <summary>
+        /// Retrieves a component from the Entity. Not
+        /// preferred over `GetComponent<T>`, however is sometimes useful.
+        /// </summary>
+        /// <param name="componentType">Component to retrieve.</param>
+        /// <returns>An instance of the component, or null if the entity does not have the component.</returns>
+        public IComponent GetRawComponent(Type componentType)
+        {
+            if (!typeof(IComponent).IsAssignableFrom(componentType))
             {
                 throw new TypeNotComponentException();
             }
-
-            IComponent foundComp = _components.Find((IComponent comp) =>
+            if (IsIndependent())
             {
-                return comp.GetType() == componentType;
-            });
+                if (_components.ContainsKey(componentType))
+                {
+                    return _components[componentType];
+                }
+                return null;
+            }
 
-            return foundComp;
+            return Engine.GetComponent(EntityID, componentType);
+        }
+        /// <summary>
+        /// Checks if the Entity has the Component.
+        /// </summary>
+        /// <typeparam name="T">Component to check against.</typeparam>
+        /// <returns>True if the Entity contains the component, false otherwise.</returns>
+        public bool HasComponent<T>() where T : class, IComponent, new()
+        {
+            if(IsIndependent())
+            {
+                return GetComponent<T>() == null;
+            }
+
+            return Engine.HasComponent<T>(EntityID);
         }
 
         /// <summary>
-        /// Add a component to this Entity.
+        /// Checks if the Entity is valid within its Engine.
         /// </summary>
-        /// <param name="component">Component to add.</param>
-        public void AddComponent(IComponent component)
+        /// <returns>True if the Entity is valid, false otherwise.</returns>
+        public bool IsValid()
         {
-            if (HasComponent(component.GetType()))
+            if(EntityID < 0)
             {
-                throw new ComponentAlreadyExistsException();
+                return false;
             }
 
-            _components.Add(component);
-            // Update caches
-            _engine.UpdateFamilyBags(this);
+            return Engine._entityMap.IsEntityValid(EntityID);
         }
 
-        /// <summary>
-        /// Removes a component from the Entity.
-        /// </summary>
-        /// <typeparam name="T">IComponent to remove.</typeparam>
-        public void RemoveComponent<T>() where T : IComponent
+        internal bool IsIndependent()
         {
-            RemoveComponent(typeof(T));
+            return EntityID == -1;
         }
-
-        /// <summary>
-        /// Removes a component from the Entity.
-        /// </summary>
-        /// <param name="componentType">IComponent type to remove.</param>
-        public void RemoveComponent(Type componentType)
+        internal void ConvertToIndependentEntity()
         {
-            if (!componentType.IsComponent())
+            _components = new Dictionary<Type, IComponent>();
+
+            foreach (Type componentType in _components.Keys)
             {
-                throw new TypeNotComponentException();
+                IComponent component = GetRawComponent(componentType);
+                if (GetRawComponent(componentType) != null)
+                {
+                    RemoveRawComponent(componentType);
+
+                    _components.Add(componentType, component);
+                }
             }
 
-            if (!HasComponent(componentType))
-            {
-                throw new ComponentNotFoundException();
-            }
-
-            IComponent componentToRemove = (IComponent)GetComponent(componentType);
-
-            _components.Remove(componentToRemove);
-            // Update caches
-            _engine.UpdateFamilyBags(this);
+            EntityID = -1;
+            Engine = null;
         }
     }
 }

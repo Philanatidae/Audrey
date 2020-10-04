@@ -4,100 +4,141 @@ using System.Collections.Generic;
 namespace Audrey
 {
     /// <summary>
-    /// Represents a family of entities.
+    /// Specifies component make-up of entities belonging
+    /// to a Family.
     /// </summary>
-    /// <remarks>
-    /// A family is essentially a filter for components within entities.
-    /// </remarks>
-    public class Family : IEquatable<Family>
+    public class Family
     {
-        readonly Type[] _allComponents;
-        readonly Type[] _oneComponents;
-        readonly Type[] _noneComponents;
+        internal readonly Type[] _allComponents;
+        internal readonly Type[] _oneComponents;
+        internal readonly Type[] _excludeComponents;
 
-        internal Family(Type[] all, Type[] one, Type[] none)
+        private readonly string[] _allComponentsNames;
+        private readonly string[] _oneComponentsNames;
+        private readonly string[] _excludeComponentsNames;
+
+        internal Family(Type[] allComponents, Type[] oneComponents, Type[] excludeComponents)
         {
-            _allComponents = all;
-            _oneComponents = one;
-            _noneComponents = none;
+            _allComponents = allComponents;
+            _allComponentsNames = GenerateNames(_allComponents);
+            _oneComponents = oneComponents;
+            _oneComponentsNames = GenerateNames(_oneComponents);
+            _excludeComponents = excludeComponents;
+            _excludeComponentsNames = GenerateNames(_excludeComponents);
+        }
+
+        private string[] GenerateNames(Type[] types)
+        {
+            string[] names = new string[types.Length];
+            for (int i = 0; i < types.Length; i++)
+            {
+                names[i] = types[i].ToString();
+            }
+            return names;
         }
 
         /// <summary>
-        /// Determines if an entity matches the family
+        /// Specifies components that entities must contain all of.
         /// </summary>
-        /// <returns><c>true</c>, if <paramref name="entity"/> matches the samily,
-        /// <c>false</c> otherwise.</returns>
-        /// <param name="entity">Entity to check.</param>
-        public bool Matches(Entity entity)
+        /// <param name="types">Types of components that entities must contain all of.</param>
+        /// <returns>FamilyBuilder</returns>
+        public static FamilyBuilder All(params Type[] types)
         {
-            // Entity must have all of these components
-            for (int i = 0; i < _allComponents.Length; i++)
-            {
-                Type comp = _allComponents[i];
+            FamilyBuilder familyBuilder = new FamilyBuilder();
+            return familyBuilder.All(types);
+        }
+        /// <summary>
+        /// Specifies components that entities must contain at least one of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain all of.</param>
+        /// <returns>FamilyBuilder</returns>
+        public static FamilyBuilder One(params Type[] types)
+        {
+            FamilyBuilder familyBuilder = new FamilyBuilder();
+            return familyBuilder.One(types);
+        }
+        /// <summary>
+        /// Specifies components that entities must contain none of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain none of.</param>
+        /// <returns>FamilyBuilder</returns>
+        public static FamilyBuilder Exclude(params Type[] types)
+        {
+            FamilyBuilder familyBuilder = new FamilyBuilder();
+            return familyBuilder.Exclude(types);
+        }
 
-                if (!entity.HasComponent(comp))
+        /// <summary>
+        /// Determines if an entity matches the component
+        /// make-up of this Family.
+        /// </summary>
+        /// <param name="engine">Engine the entity belongs to.</param>
+        /// <param name="entityID">ID of the entity.</param>
+        /// <returns>True if the entity matches the Family, otherwise false.</returns>
+        public bool Matches(Engine engine, int entityID)
+        {
+            Entity entity = engine._entityMap.GetEntityWrapperFromID(entityID);
+
+            foreach(Type type in _allComponents)
+            {
+                if(entity.GetRawComponent(type) == null)
+                {
+                    return false;
+                }
+            }
+            bool containsOne = false;
+            foreach (Type type in _oneComponents)
+            {
+                if (entity.GetRawComponent(type) != null)
+                {
+                    containsOne = true;
+                    break;
+                }
+            }
+            if(!containsOne)
+            {
+                return false;
+            }
+
+            foreach(Type type in _excludeComponents)
+            {
+                if(entity.GetRawComponent(type) != null)
                 {
                     return false;
                 }
             }
 
-            // Entity must have at least one of these components
-            if (_oneComponents.Length > 0)
-            {
-                bool hasOne = false;
-                for (int i = 0; i < _oneComponents.Length; i++)
-                {
-                    Type comp = _oneComponents[i];
-
-                    if (entity.HasComponent(comp))
-                    {
-                        hasOne = true;
-                        break;
-                    }
-                }
-
-                if (!hasOne)
-                {
-                    return false;
-                }
-            }
-
-            // Entity must have none of these components
-            for (int i = 0; i < _noneComponents.Length; i++)
-            {
-                Type comp = _noneComponents[i];
-
-                if (entity.HasComponent(comp))
-                {
-                    return false;
-                }
-            }
-
-            // Passed the filter; matched the family
             return true;
         }
 
+        /// <summary>
+        /// Determines if a Family is equivalent to this Family.
+        /// </summary>
+        /// <param name="other">Family to compare against.</param>
+        /// <returns>True if equivalent, false otherwise.</returns>
         public bool Equals(Family other)
         {
-            return _allComponents.IsEquivalent(other._allComponents)
-                                 && _oneComponents.IsEquivalent(other._oneComponents)
-                                 && _noneComponents.IsEquivalent(other._noneComponents);
+            return _allComponents.IsEquivalent(other._allComponents);
         }
 
+        /// <summary>
+        /// Determines if an object is equivalent to this Family.
+        /// </summary>
+        /// <param name="other">Family to compare against.</param>
+        /// <returns>True if equivalent, false otherwise.</returns>
         public override bool Equals(object obj)
         {
-            if (obj == this)
+            if(obj == this)
             {
                 return true;
             }
-
-            if (obj == null)
+            if(obj == null)
             {
                 return false;
             }
 
             Family other = obj as Family;
-            if (other == null)
+            if(other == null)
             {
                 return false;
             }
@@ -111,19 +152,17 @@ namespace Audrey
             {
                 int hash = 17;
 
-                for (int i = 0; i < _allComponents.Length; i++)
+                foreach(Type type in _allComponents)
                 {
-                    hash = hash * 31 + _allComponents[i].GetHashCode();
+                    hash = hash * 31 + type.GetHashCode();
                 }
-
-                for (int i = 0; i < _oneComponents.Length; i++)
+                foreach (Type type in _oneComponents)
                 {
-                    hash = hash * 31 + _oneComponents[i].GetHashCode();
+                    hash = hash * 31 + type.GetHashCode();
                 }
-
-                for (int i = 0; i < _noneComponents.Length; i++)
+                foreach (Type type in _excludeComponents)
                 {
-                    hash = hash * 31 + _noneComponents[i].GetHashCode();
+                    hash = hash * 31 + type.GetHashCode();
                 }
 
                 return hash;
@@ -132,125 +171,60 @@ namespace Audrey
 
         public override string ToString()
         {
-            string[] allComps = new string[_allComponents.Length];
-            for (int i = 0; i < _allComponents.Length; i++)
-            {
-                allComps[i] = _allComponents[i].ToString();
-            }
-
-            string[] oneComps = new string[_oneComponents.Length];
-            for (int i = 0; i < _oneComponents.Length; i++)
-            {
-                oneComps[i] = _oneComponents[i].ToString();
-            }
-
-            string[] noneComps = new string[_noneComponents.Length];
-            for (int i = 0; i < _noneComponents.Length; i++)
-            {
-                noneComps[i] = _noneComponents[i].ToString();
-            }
-
-            return string.Format("[Family]\nAll: {0}\nOne: {1}\nNone: {2}",
-                                 string.Join(", ", allComps),
-                                 string.Join(", ", oneComps),
-                                 string.Join(", ", noneComps));
-        }
-
-        /// <summary>
-        /// Entities must contain all of the following components.
-        /// </summary>
-        /// <remarks>
-        /// Constructs a new FamilyBuilder to build a Family.
-        /// </remarks>
-        /// <returns>FamilyBuilder for building a family.</returns>
-        /// <param name="components">Components for which entities must have all of.</param>
-        public static FamilyBuilder All(params Type[] components)
-        {
-            return new FamilyBuilder().All(components);
-        }
-
-        /// <summary>
-        /// Entities must have one of the following components.
-        /// </summary>
-        /// <remarks>
-        /// Constructs a new FamilyBuilder to build a Family.
-        /// </remarks>
-        /// <returns>FamilyBuilder for building a family.</returns>
-        /// <param name="components">Components for which entities must have at least one of.</param>
-        public static FamilyBuilder One(params Type[] components)
-        {
-            return new FamilyBuilder().One(components);
-        }
-
-        /// <summary>
-        /// Entities must have none of the following components.
-        /// </summary>
-        /// <remarks>
-        /// Constructs a new FamilyBuilder to build a Family.
-        /// </remarks>
-        /// <returns>FamilyBuilder for building a family.</returns>
-        /// <param name="components">Components for which entities must have none of.</param>
-        public static FamilyBuilder Exclude(params Type[] components)
-        {
-            return new FamilyBuilder().Exclude(components);
+            return string.Format($"[Family]\nAll: {string.Join(", ", _allComponentsNames)}\n" +
+                $"One: {string.Join(", ", _oneComponentsNames)}\n" +
+                $"Exclude: {string.Join(", ", _excludeComponentsNames)}");
         }
     }
 
-    /// <summary>
-    /// A helper class for building a Family.
-    /// </summary>
     public class FamilyBuilder
     {
+        List<Type> _allComponents = new List<Type>();
+        List<Type> _oneComponents = new List<Type>();
+        List<Type> _excludeComponents = new List<Type>();
+
         internal FamilyBuilder()
         {
         }
 
-        List<Type> _allComponents = new List<Type>();
-        List<Type> _oneComponents = new List<Type>();
-        List<Type> _noneComponents = new List<Type>();
-
         /// <summary>
-        /// Entities must have all of the following components.
+        /// Specifies components that entities must contain all of.
         /// </summary>
-        /// <returns>FamilyBuilder for building a Family.</returns>
-        /// <param name="components">Components for which entities must have all of.</param>
-        public FamilyBuilder All(params Type[] components)
+        /// <param name="types">Types of components that entities must contain all of.</param>
+        /// <returns>FamilyBuilder</returns>
+        public FamilyBuilder All(params Type[] types)
         {
-            _allComponents.AddRange(components);
+            _allComponents.AddRange(types);
+            return this;
+        }
+        /// <summary>
+        /// Specifies components that entities must contain at least one of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain all of.</param>
+        /// <returns>FamilyBuilder</returns>
+        public FamilyBuilder One(params Type[] types)
+        {
+            _oneComponents.AddRange(types);
+            return this;
+        }
+        /// <summary>
+        /// Specifies components that entities must contain none of.
+        /// </summary>
+        /// <param name="types">Types of components that entities must contain none of.</param>
+        /// <returns>FamilyBuilder</returns>
+        public FamilyBuilder Exclude(params Type[] types)
+        {
+            _excludeComponents.AddRange(types);
             return this;
         }
 
         /// <summary>
-        /// Entities must have one of the following components.
+        /// Returns a constructed Family object.
         /// </summary>
-        /// <returns>FamilyBuilder for building a Family.</returns>
-        /// <param name="components">Components for which entities must have at least one of.</param>
-        public FamilyBuilder One(params Type[] components)
-        {
-            _oneComponents.AddRange(components);
-            return this;
-        }
-
-        /// <summary>
-        /// Entities must have none of the following components.
-        /// </summary>
-        /// <returns>FamilyBuilder for building a Family.</returns>
-        /// <param name="components">Components for which entities must have none of.</param>
-        public FamilyBuilder Exclude(params Type[] components)
-        {
-            _noneComponents.AddRange(components);
-            return this;
-        }
-
-        /// <summary>
-        /// Builds and retrieves the built Family.
-        /// </summary>
-        /// <returns>Built Family.</returns>
+        /// <returns>Constructed Family object.</returns>
         public Family Get()
         {
-            return new Family(_allComponents.ToArray(),
-                              _oneComponents.ToArray(),
-                              _noneComponents.ToArray());
+            return new Family(_allComponents.ToArray(), _oneComponents.ToArray(), _excludeComponents.ToArray());
         }
     }
 }

@@ -6,7 +6,7 @@ namespace Audrey
     /// <summary>
     /// Wrapper for a List<T> reference to create a list that cannot be changed.
     /// </summary>
-    public class ImmutableList<T> : IEnumerable<T> where T : class
+    public class ImmutableList<T> : IEnumerable<T>
     {
         readonly List<T> _items;
 
