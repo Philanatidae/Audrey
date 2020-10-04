@@ -2,10 +2,26 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Version>1.1.0</Version>
+    <PackageId>Audrey</PackageId>
+    <Authors>Philip Rader</Authors>
+    <Product>Audrey ECS</Product>
+    <Copyright>Philip Rader 2020</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageProjectUrl>https://github.com/pjrader1/Audrey</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/pjrader1/Audrey</RepositoryUrl>
+    <Description>A simple to use and performant Entity-Component-System library loosely based on the LibGDX Ashley ECS library for Java.</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>ECS Entity Component System Simple Easy Ashley</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Engine.cs~RF469cb8.TMP" />
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -4,6 +4,10 @@ A simple ECS for C#. This was created for my personal projects, however I decide
 
 Audrey initially used maps of components in entities. With many entities, this turned out to have poor performance. I rewrote Audrey to use sparse sets, similar to EnTT, which greatly improved performance in my own projects. While the library as a whole is not as fast as EnTT, it remains a good choice for a simple yet performant ECS.
 
+# Version
+
+The current version of Audrey is `v1.1`.
+
 # Installing
 
 Download the repository as a zip (or add as a submodule to your project's Git repository), add the 'Audrey' project to your solution, and add Audrey as a project reference to the project you wish to use it in. Audrey does not reference other projects.
@@ -64,4 +68,4 @@ Create an issus to identify bugs/improvements. If you would like to contribute, 
 
 # License
 
-MIT
+MIT. See `LICENSE`.
