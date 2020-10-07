@@ -187,6 +187,32 @@ namespace Audrey
         }
 
         /// <summary>
+        /// Call when an Entity is destroyed, removing it form the Family.
+        /// </summary>
+        /// <param name="entityID">ID of the Entity.</param>
+        public void EntityDestroyed(int entityID)
+        {
+            if(!Engine._entityMap.IsEntityValid(entityID))
+            {
+                return;
+            }
+
+            RemoveEntityFromFamily(entityID);
+            foreach(List<bool> comps in _allComponentsMap.Values)
+            {
+                comps[entityID] = false;
+            }
+            foreach (List<bool> comps in _allComponentsMap.Values)
+            {
+                comps[entityID] = false;
+            }
+            foreach (List<bool> comps in _allComponentsMap.Values)
+            {
+                comps[entityID] = false;
+            }
+        }
+
+        /// <summary>
         /// Called when a Component is added to an
         /// Entity via a ComponentMap.
         /// </summary>
@@ -378,6 +404,7 @@ namespace Audrey
             }
             _familyEntityIndices.Add(entityID);
             _familyEntities.Add(Engine._entityMap.GetEntityWrapperFromID(entityID));
+            Engine._entityMap.AddEntityToFamily(entityID, this);
         }
         private void RemoveEntityFromFamily(int entityID)
         {
@@ -388,6 +415,7 @@ namespace Audrey
             int idx = _familyEntityIndices.IndexOf(entityID);
             _familyEntityIndices.RemoveAt(idx);
             _familyEntities.RemoveAt(idx);
+            Engine._entityMap.RemoveEntityFromFamily(entityID, this);
         }
         private bool IsEntityInFamilyList(int entityID)
         {

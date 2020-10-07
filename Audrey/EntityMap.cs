@@ -22,6 +22,7 @@ namespace Audrey
         private List<int> _entityList = new List<int>(); // Packed, points to _entityIndices
         private List<Entity> _entityWrappers = new List<Entity>(); // Packed, associated with _entityList
         private List<List<IComponent>> _entityComponents = new List<List<IComponent>>(); // Packed, associated with _entityList
+        private List<List<FamilyManager>> _entityFamilies = new List<List<FamilyManager>>();
 
         private List<int> _unusedEntityIDs = new List<int>();
 
@@ -53,23 +54,24 @@ namespace Audrey
         /// <returns>Entity wrapper of the entity ID.</returns>
         public Entity CreateEntity()
         {
+            int idx = _entityList.Count;
+
             int entityID;
             if(_unusedEntityIDs.Count > 0)
             {
                 entityID = _unusedEntityIDs[0];
                 _unusedEntityIDs.RemoveAt(0);
+                _entityIndices[entityID] = idx;
             } else
             {
                 entityID = _entityIndices.Count;
+                _entityIndices.Add(idx);
             }
-
-            int idx = _entityList.Count;
-
-            _entityIndices.Add(idx);
 
             _entityList.Add(entityID);
             _entityWrappers.Add(new Entity(Engine, entityID));
             _entityComponents.Add(new List<IComponent>());
+            _entityFamilies.Add(new List<FamilyManager>());
 
             return _entityWrappers[_entityIndices[entityID]];
         }
@@ -83,14 +85,27 @@ namespace Audrey
             int idx = _entityIndices[entityID];
             Entity entity = _entityWrappers[idx];
 
-            _entityList.RemoveAt(idx);
-            _entityWrappers.RemoveAt(idx);
-            _entityComponents.RemoveAt(idx);
-
-            _entityIndices[entityID] = -1;
+            FamilyManager[] familyManagers = _entityFamilies[idx].ToArray();
+            foreach(FamilyManager familyManager in familyManagers)
+            {
+                familyManager.EntityDestroyed(entityID);
+            }
 
             _unusedEntityIDs.Add(entity.EntityID);
             entity.ConvertToIndependentEntity();
+
+            _entityList.RemoveAt(idx);
+            _entityWrappers.RemoveAt(idx);
+            _entityComponents.RemoveAt(idx);
+            _entityFamilies.RemoveAt(idx);
+
+            // Update _entityIndices to account for the _componentList becoming shorter
+            for (int i = idx; i < _entityList.Count; i++)
+            {
+                _entityIndices[_entityList[i]]--;
+            }
+            
+            _entityIndices[entityID] = -1;
         }
 
         /// <summary>
@@ -147,8 +162,11 @@ namespace Audrey
             {
                 return false;
             }
-
-            return entityID < _entityIndices.Count;
+            if(entityID > _entityIndices.Count - 1)
+            {
+                return false;
+            }
+            return _entityIndices[entityID] > -1;
         }
 
         /// <summary>
@@ -164,6 +182,25 @@ namespace Audrey
             }
 
             return _entityWrappers[_entityIndices[entityID]];
+        }
+
+        public void AddEntityToFamily(int entityID, FamilyManager familyManager)
+        {
+            if (!IsEntityValid(entityID))
+            {
+                return;
+            }
+
+            _entityFamilies[_entityIndices[entityID]].Add(familyManager);
+        }
+        public void RemoveEntityFromFamily(int entityID, FamilyManager familyManager)
+        {
+            if (!IsEntityValid(entityID))
+            {
+                return;
+            }
+
+            _entityFamilies[_entityIndices[entityID]].Remove(familyManager);
         }
     }
 }

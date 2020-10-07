@@ -103,8 +103,8 @@ namespace Audrey
             if (!_components.ContainsKey(type))
             {
                 Type componentMapType = typeof(ComponentMap<>).MakeGenericType(type);
-                _components.Add(type, (IComponentMap)Activator.CreateInstance(componentMapType));
-                _components[type].Initialize(this);
+                _components.Add(type, (IComponentMap)Activator.CreateInstance(componentMapType, this));
+                _components[type].Initialize();
             }
 
             _entityMap.AddComponent(entityID, component);
@@ -207,8 +207,8 @@ namespace Audrey
                     if(!_components.ContainsKey(compType))
                     {
                         Type componentMapType = typeof(ComponentMap<>).MakeGenericType(compType);
-                        _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType));
-                        _components[compType].Initialize(this);
+                        _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType, this));
+                        _components[compType].Initialize();
                     }
 
                     _components[compType].RegisterFamilyManager(familyMap);
@@ -218,8 +218,8 @@ namespace Audrey
                     if (!_components.ContainsKey(compType))
                     {
                         Type componentMapType = typeof(ComponentMap<>).MakeGenericType(compType);
-                        _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType));
-                        _components[compType].Initialize(this);
+                        _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType, this));
+                        _components[compType].Initialize();
                     }
 
                     _components[compType].RegisterFamilyManager(familyMap);
@@ -229,8 +229,8 @@ namespace Audrey
                     if (!_components.ContainsKey(compType))
                     {
                         Type componentMapType = typeof(ComponentMap<>).MakeGenericType(compType);
-                        _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType));
-                        _components[compType].Initialize(this);
+                        _components.Add(compType, (IComponentMap)Activator.CreateInstance(componentMapType, this));
+                        _components[compType].Initialize();
                     }
 
                     _components[compType].RegisterFamilyManager(familyMap);
