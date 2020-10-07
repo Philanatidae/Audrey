@@ -54,19 +54,19 @@ namespace Audrey
         /// <returns>Entity wrapper of the entity ID.</returns>
         public Entity CreateEntity()
         {
+            int idx = _entityList.Count;
+
             int entityID;
             if(_unusedEntityIDs.Count > 0)
             {
                 entityID = _unusedEntityIDs[0];
                 _unusedEntityIDs.RemoveAt(0);
+                _entityIndices[entityID] = idx;
             } else
             {
                 entityID = _entityIndices.Count;
+                _entityIndices.Add(idx);
             }
-
-            int idx = _entityList.Count;
-
-            _entityIndices.Add(idx);
 
             _entityList.Add(entityID);
             _entityWrappers.Add(new Entity(Engine, entityID));
@@ -91,6 +91,7 @@ namespace Audrey
                 familyManager.EntityDestroyed(entityID);
             }
 
+            _unusedEntityIDs.Add(entity.EntityID);
             entity.ConvertToIndependentEntity();
 
             _entityList.RemoveAt(idx);
@@ -105,8 +106,6 @@ namespace Audrey
             }
             
             _entityIndices[entityID] = -1;
-
-            _unusedEntityIDs.Add(entity.EntityID);
         }
 
         /// <summary>
@@ -163,8 +162,11 @@ namespace Audrey
             {
                 return false;
             }
-
-            return entityID < _entityIndices.Count;
+            if(entityID > _entityIndices.Count - 1)
+            {
+                return false;
+            }
+            return _entityIndices[entityID] > -1;
         }
 
         /// <summary>
