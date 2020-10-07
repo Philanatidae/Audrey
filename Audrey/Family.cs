@@ -83,18 +83,21 @@ namespace Audrey
                     return false;
                 }
             }
-            bool containsOne = false;
-            foreach (Type type in _oneComponents)
+            if (_oneComponents.Length > 0)
             {
-                if (entity.GetRawComponent(type) != null)
+                bool containsOne = false;
+                foreach (Type type in _oneComponents)
                 {
-                    containsOne = true;
-                    break;
+                    if (entity.GetRawComponent(type) != null)
+                    {
+                        containsOne = true;
+                        break;
+                    }
                 }
-            }
-            if(!containsOne)
-            {
-                return false;
+                if (!containsOne)
+                {
+                    return false;
+                }
             }
 
             foreach(Type type in _excludeComponents)

@@ -107,6 +107,8 @@ namespace Audrey
                 _components[type].Initialize(this);
             }
 
+            _entityMap.AddComponent(entityID, component);
+
             return _components[type].AddRawComponent(entityID, component);
         }
 
@@ -125,6 +127,8 @@ namespace Audrey
             {
                 return;
             }
+
+            _entityMap.AddComponent(entityID, _entityMap.GetEntityWrapperFromID(entityID).GetRawComponent(type));
 
             _components[type].RemoveComponent(entityID);
         }

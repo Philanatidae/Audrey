@@ -21,6 +21,7 @@ namespace Audrey
         private List<int> _entityIndices = new List<int>(); // Sparse
         private List<int> _entityList = new List<int>(); // Packed, points to _entityIndices
         private List<Entity> _entityWrappers = new List<Entity>(); // Packed, associated with _entityList
+        private List<List<IComponent>> _entityComponents = new List<List<IComponent>>(); // Packed, associated with _entityList
 
         private List<int> _unusedEntityIDs = new List<int>();
 
@@ -68,6 +69,7 @@ namespace Audrey
 
             _entityList.Add(entityID);
             _entityWrappers.Add(new Entity(Engine, entityID));
+            _entityComponents.Add(new List<IComponent>());
 
             return _entityWrappers[_entityIndices[entityID]];
         }
@@ -83,11 +85,55 @@ namespace Audrey
 
             _entityList.RemoveAt(idx);
             _entityWrappers.RemoveAt(idx);
+            _entityComponents.RemoveAt(idx);
 
             _entityIndices[entityID] = -1;
 
             _unusedEntityIDs.Add(entity.EntityID);
             entity.ConvertToIndependentEntity();
+        }
+
+        /// <summary>
+        /// Called when a component is added to an Entity.
+        /// </summary>
+        /// <param name="entityID">ID of the Entity.</param>
+        /// <param name="component">Component instance to be added.</param>
+        public void AddComponent(int entityID, IComponent component)
+        {
+            if(!IsEntityValid(entityID))
+            {
+                return;
+            }
+
+            _entityComponents[_entityIndices[entityID]].Add(component);
+        }
+        /// <summary>
+        /// Called when a component is removed from an Entity.
+        /// </summary>
+        /// <param name="entityID">ID of the Entity.</param>
+        /// <param name="component">Component instance to be removed.</param>
+        public void RemoveComponent(int entityID, IComponent component)
+        {
+            if (!IsEntityValid(entityID))
+            {
+                return;
+            }
+
+            _entityComponents[_entityIndices[entityID]].Remove(component);
+        }
+        /// <summary>
+        /// Returns an array of component instances for an Entity.
+        /// </summary>
+        /// <param name="entityID">ID of the Entity.</param>
+        /// <returns>Array of components for the Entity.</returns>
+        public IComponent[] GetComponents(int entityID)
+        {
+            if (!IsEntityValid(entityID))
+            {
+                return null;
+            }
+
+            return _entityComponents[_entityIndices[entityID]].ToArray();
         }
 
         /// <summary>

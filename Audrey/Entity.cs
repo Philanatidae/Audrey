@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Audrey
 {
@@ -171,6 +172,38 @@ namespace Audrey
             }
 
             return Engine.HasComponent<T>(EntityID);
+        }
+
+        /// <summary>
+        /// Returns an array of component instances for
+        /// this Entity.
+        /// </summary>
+        /// <returns>Array of components.</returns>
+        public IComponent[] GetComponents()
+        {
+            if(IsIndependent())
+            {
+                return _components.Values.ToArray();
+            }
+
+            return Engine._entityMap.GetComponents(EntityID);
+        }
+
+        /// <summary>
+        /// Removes all components except for the component
+        /// types specified.
+        /// </summary>
+        /// <param name="types">Component types to not remove.</param>
+        public void StripAllComponentsExcept(params Type[] types)
+        {
+            IComponent[] components = GetComponents();
+            foreach(IComponent component in components)
+            {
+                if(!types.Contains(component.GetType()))
+                {
+                    RemoveRawComponent(component.GetType());
+                }
+            }
         }
 
         /// <summary>
