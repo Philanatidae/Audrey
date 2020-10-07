@@ -1,5 +1,6 @@
 ﻿using Audrey.Tests.Components;
 using NUnit.Framework;
+using System.Linq;
 
 namespace Audrey.Tests
 {
@@ -44,6 +45,23 @@ namespace Audrey.Tests
 
             Assert.IsFalse(entity.HasComponent<TestComponent1>());
             Assert.IsFalse(entity.HasComponent<TestComponent3>());
+        }
+
+        [Test]
+        public void EntityGetComponents()
+        {
+            Engine engine = new Engine();
+
+            Entity entity = engine.CreateEntity();
+
+            TestComponent1 comp1 = new TestComponent1();
+            TestComponent2 comp2 = new TestComponent2();
+
+            entity.AddRawComponent(comp1);
+            entity.AddRawComponent(comp2);
+
+            Assert.IsTrue(entity.GetComponents().Contains(comp1));
+            Assert.IsTrue(entity.GetComponents().Contains(comp2));
         }
     }
 }
