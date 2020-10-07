@@ -41,6 +41,11 @@ namespace Audrey
             return _items.GetEnumerator();
         }
 
+        bool Contains(T item)
+        {
+            return _items.Contains(item);
+        }
+
         public T this[int key]
         {
             get

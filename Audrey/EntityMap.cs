@@ -83,14 +83,21 @@ namespace Audrey
             int idx = _entityIndices[entityID];
             Entity entity = _entityWrappers[idx];
 
+            entity.ConvertToIndependentEntity();
+
             _entityList.RemoveAt(idx);
             _entityWrappers.RemoveAt(idx);
             _entityComponents.RemoveAt(idx);
 
+            // Update _entityIndices to account for the _componentList becoming shorter
+            for (int i = idx; i < _entityList.Count; i++)
+            {
+                _entityIndices[_entityList[i]]--;
+            }
+            
             _entityIndices[entityID] = -1;
 
             _unusedEntityIDs.Add(entity.EntityID);
-            entity.ConvertToIndependentEntity();
         }
 
         /// <summary>

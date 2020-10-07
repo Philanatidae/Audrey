@@ -168,7 +168,7 @@ namespace Audrey
         {
             if(IsIndependent())
             {
-                return GetComponent<T>() == null;
+                return GetComponent<T>() != null;
             }
 
             return Engine.HasComponent<T>(EntityID);
@@ -228,9 +228,10 @@ namespace Audrey
         {
             _components = new Dictionary<Type, IComponent>();
 
-            foreach (Type componentType in _components.Keys)
+            foreach (IComponent component in GetComponents())
             {
-                IComponent component = GetRawComponent(componentType);
+                Type componentType = component.GetType();
+
                 if (GetRawComponent(componentType) != null)
                 {
                     RemoveRawComponent(componentType);
