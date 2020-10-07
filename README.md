@@ -6,7 +6,7 @@ Audrey initially used maps of components in entities. With many entities, this t
 
 # Version
 
-The current version of Audrey is `v1.1.2`.
+The current version of Audrey is `v1.1.3`.
 
 # Installing
 
