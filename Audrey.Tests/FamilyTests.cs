@@ -164,5 +164,23 @@ namespace Audrey.Tests
             Assert.IsTrue(engine.GetEntities().Count == 3);
             Assert.IsTrue(engine.GetEntitiesFor(family).Count == 0);
         }
+
+        [Test]
+        public void FamilyDestroyForExclude()
+        {
+            Engine engine = new Engine();
+
+            CreateTestEntities(engine);
+
+            Family family = Family.Exclude(typeof(TestComponent1)).Get();
+
+            Assert.IsTrue(engine.GetEntities().Count == 5);
+            Assert.IsTrue(engine.GetEntitiesFor(family).Count == 1);
+
+            engine.DestroyEntitiesFor(family);
+
+            Assert.IsTrue(engine.GetEntities().Count == 4);
+            Assert.IsTrue(engine.GetEntitiesFor(family).Count == 0);
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Audrey.Exceptions;
-using System;
 using System.Collections.Generic;
 
 namespace Audrey
@@ -10,7 +9,7 @@ namespace Audrey
     public interface IComponentMap
     {
         void RegisterFamilyManager(FamilyManager familyMap);
-        void Initialize(Engine engine);
+        void Initialize();
         void AddEmptyEntity();
         IComponent AddRawComponent(int id, IComponent component);
         void RemoveComponent(int id);
@@ -28,6 +27,12 @@ namespace Audrey
     /// <typeparam name="T">Component that this map will represent.</typeparam>
     internal class ComponentMap<T> : IComponentMap where T : class, IComponent
     {
+        public Engine Engine
+        {
+            get;
+            private set;
+        }
+
         private List<int> _entityIndices = new List<int>(); // Sparse set, index = entity ID, value = index of componnet
 
         private List<int> _entityList = new List<int>(); // Index = index of component, value = entity ID (reverse lookup)
@@ -35,17 +40,18 @@ namespace Audrey
 
         private List<FamilyManager> _familyManagers = new List<FamilyManager>(); // Family maps that this component type needs to update
 
-        public ComponentMap()
+        public ComponentMap(Engine engine)
         {
+            Engine = engine;
         }
 
         /// <summary>
         /// Initializes the component map with an Engine.
         /// </summary>
         /// <param name="engine">Engine this component map belongs to.</param>
-        public void Initialize(Engine engine)
+        public void Initialize()
         {
-            for (int i = 0; i < engine._entityMap.RawEntityCount; i++)
+            for (int i = 0; i < Engine._entityMap.RawEntityCount; i++)
             {
                 _entityIndices.Add(-1);
             }

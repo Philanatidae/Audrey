@@ -22,6 +22,7 @@ namespace Audrey
         private List<int> _entityList = new List<int>(); // Packed, points to _entityIndices
         private List<Entity> _entityWrappers = new List<Entity>(); // Packed, associated with _entityList
         private List<List<IComponent>> _entityComponents = new List<List<IComponent>>(); // Packed, associated with _entityList
+        private List<List<FamilyManager>> _entityFamilies = new List<List<FamilyManager>>();
 
         private List<int> _unusedEntityIDs = new List<int>();
 
@@ -70,6 +71,7 @@ namespace Audrey
             _entityList.Add(entityID);
             _entityWrappers.Add(new Entity(Engine, entityID));
             _entityComponents.Add(new List<IComponent>());
+            _entityFamilies.Add(new List<FamilyManager>());
 
             return _entityWrappers[_entityIndices[entityID]];
         }
@@ -83,11 +85,18 @@ namespace Audrey
             int idx = _entityIndices[entityID];
             Entity entity = _entityWrappers[idx];
 
+            FamilyManager[] familyManagers = _entityFamilies[idx].ToArray();
+            foreach(FamilyManager familyManager in familyManagers)
+            {
+                familyManager.EntityDestroyed(entityID);
+            }
+
             entity.ConvertToIndependentEntity();
 
             _entityList.RemoveAt(idx);
             _entityWrappers.RemoveAt(idx);
             _entityComponents.RemoveAt(idx);
+            _entityFamilies.RemoveAt(idx);
 
             // Update _entityIndices to account for the _componentList becoming shorter
             for (int i = idx; i < _entityList.Count; i++)
@@ -171,6 +180,25 @@ namespace Audrey
             }
 
             return _entityWrappers[_entityIndices[entityID]];
+        }
+
+        public void AddEntityToFamily(int entityID, FamilyManager familyManager)
+        {
+            if (!IsEntityValid(entityID))
+            {
+                return;
+            }
+
+            _entityFamilies[_entityIndices[entityID]].Add(familyManager);
+        }
+        public void RemoveEntityFromFamily(int entityID, FamilyManager familyManager)
+        {
+            if (!IsEntityValid(entityID))
+            {
+                return;
+            }
+
+            _entityFamilies[_entityIndices[entityID]].Remove(familyManager);
         }
     }
 }
