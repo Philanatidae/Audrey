@@ -133,5 +133,19 @@ namespace Audrey.Tests
             entity.AddComponent(new TestComponent1());
             Assert.IsTrue(entities.Count == 1);
         }
+
+        [Test]
+        public void FamilyMatches()
+        {
+            Engine engine = new Engine();
+
+            Entity entity = engine.CreateEntity();
+            entity.AddComponent(new TestComponent1());
+            entity.AddComponent(new TestComponent2());
+
+            Assert.IsTrue(Family.All(typeof(TestComponent1), typeof(TestComponent2)).Get().Matches(entity));
+            bool result = Family.All(typeof(TestComponent1)).Exclude(typeof(TestComponent2)).Get().Matches(entity);
+            Assert.IsFalse(Family.All(typeof(TestComponent1)).Exclude(typeof(TestComponent2)).Get().Matches(entity));
+        }
     }
 }
